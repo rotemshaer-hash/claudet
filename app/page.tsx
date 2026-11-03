@@ -5,203 +5,131 @@ import { Mic, Send, ShieldCheck, Zap } from 'lucide-react';
 
 export default function ClaudetPlatform() {
   const [query, setQuery] = useState('');
-  const [activeCanvas, setActiveCanvas] = useState<{ title: string; content: string; features?: string[] } | null>(null);
+  const [activeCanvas, setActiveCanvas] = useState<{ title: string; content: string; howToUse?: string[]; features?: string[] } | null>(null);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
 
   const runSelfDiagnostics = () => {
-    setTestResult('מריץ בדיקת מערכת: כל 18 הסקילים המורחבים, מנוע Micro-UI ולוגו הכוכבית פועלים בהצלחה.');
+    setTestResult('מריץ בדיקת מערכת: זיהוי קולי, מדריכי השימוש וכל 18 הסקילים פעילים ותקינים.');
     setTimeout(() => setTestResult(null), 6000);
   };
 
-  const skillsData: Record<string, { title: string; content: string; features: string[] }> = {
+  const skillsData: Record<string, { title: string; content: string; howToUse: string[]; features: string[] }> = {
     music: {
       title: '🎵 סטודיו מוזיקה, פלייליסטים והשראה קולית',
-      content: 'מרחב מוקפד המשלב מחולל פלייליסטים חכם המותאם למצב הרוח שלך, סאונד ממוקד לריכוז עמוק בעבודה, פודקאסטים להעצמה אישית, וחיבור לקצב פנימי שמחזק את האנרגיה לאורך כל היום.',
-      features: [
-        'מחולל פלייליסטים דינמיים לפי רמות אנרגיה וריכוז נדרשות',
-        'המלצות לסאונדטרקים ופודקאסטים להעלאת הביטחון והפוקוס',
-        'סביבת האזנה נקייה ללא הסחות דעת לבניית השראה יצירתית',
-        'ניהול תדרי קול מותאמים אישית לשגרת העבודה והיצירה'
-      ]
+      content: 'מרחב מוקפד המשלב מחולל פלייליסטים חכם המותאם למצב הרוח שלך, סאונד ממוקד לריכוז עמוק בעבודה, פודקאסטים להעצמה אישית, וחיבור לקצב פנימי.',
+      howToUse: [
+        'אמור בקול או הקלד את מצב הרוח שלך (למשל: "מוזיקה לריכוז עמוק").',
+        'השתמש בפלייליסטים בזמן כתיבת קוד ותכנון פרויקטים למניעת הסחות דעת.',
+        'לחץ על Hands-Free כדי להפעיל חיפוש קולי מהיר מבלי לגעת במקלדת.'
+      ],
+      features: ['פלייליסטים לריכוז ויצירה', 'השראה מוזיקלית וקולית', 'סביבת האזנה נקייה']
     },
     nail: {
       title: '💅 סטודיו עיצוב ציפורניים ואסתטיקה',
-      content: 'כלי עיצוב ויזואלי מתקדם המיוצר במיוחד לאנשי מקצוע ולחובבי אסתטיקה. מאפשר ניהול פלטות צבעים יוקרתיות (רוז-גולד, לבנדר ואובסידיאן), תכנון קולקציות ותיאום מראה נקי ומודרני.',
-      features: [
-        'מחולל פלטות צבעים וטרנדים מובילים באסתטיקה וטיפוח',
-        'ממשק להפקת תיאורי עיצוב מדויקים וקונספטים לקולקציות',
-        'שמירת השראה ויזואלית וקטלוג אישי מהנייד',
-        'תצוגה מקדימה מהירה של התאמת גוונים וסגנונות נשיים'
-      ]
+      content: 'כלי עיצוב ויזואלי מתקדם המיוצר במיוחד לאנשי מקצוע ולחובבי אסתטיקה לניהול פלטות צבעים יוקרתיות ותכנון קולקציות.',
+      howToUse: [
+        'אמור בקול סגנון רצוי (למשל: "עיצוב ציפורניים רוז-גולד") לקבלת השראה מיידית.',
+        'שמור את תיאורי העיצוב להצגה מהירה מהנייד.',
+        'שלב את הגוונים בממשקי ה-Micro-UI שלך לשפה ויזואלית אחידה.'
+      ],
+      features: ['ניהול פלטות צבעים וטרנדים', 'הפקת תיאורי עיצוב וקולקציות', 'תצוגה מקדימה למובייל']
     },
     code: {
       title: '💻 עורך קוד ופיתוח SaaS',
-      content: 'סביבת פיתוח זריזה ומינימליסטית (95/5) המחוברת ישירות ל-GitHub ול-Netlify. נועדה לניהול קובצי תצורה, פריסות אוטומטיות (Deploy) וכתיבת רכיבים נקיים ללא תקלות.',
-      features: [
-        'בקרת קוד מלאה וניהול קבצי מערכת (Next.js, Tailwind, tsconfig)',
-        'מעקב ופתרון תקלות פריסה מול Netlify ישירות מהנייד',
-        'יצירת רכיבי Micro-UI מודולריים, מהירים וקלילים',
-        'סנכרון מיידי ואוטומטי מול המאגר ב-GitHub'
-      ]
+      content: 'סביבת פיתוח זריזה ומינימליסטית (95/5) המחוברת ישירות ל-GitHub ול-Netlify לניהול קובצי תצורה ופריסות אוטומטיות.',
+      howToUse: [
+        'השתמש במודול זה לניהול קבצי המערכת שלך (Next.js, Tailwind, tsconfig).',
+        'בקש פונקציות קוד חדשות וקבל קטעים נקיים להדבקה מהירה ב-GitHub.',
+        'ודא שקישורים וקובצי תשתית מעודכנים לפני פריסה אוטומטית מול Netlify.'
+      ],
+      features: ['ניהול פריסות אוטומטיות (Deploy)', 'עבודה מול Next.js', 'בניית רכיבי Micro-UI']
     },
     voice: {
       title: '🎙️ מאמן דיבור, פודקאסטים ומו"מ עִסקי',
-      content: 'סימולטור קולי חכם המאמן אותך בניהול שיחות שכר, מצגות, מכירות ומו"מ עסקי. מנתח את הטיעונים שלך ומספק פידבק מיידי לבניית ביטחון עצמי ועוצמה תקשורתית.',
-      features: [
-        'תרגול קולי חופשי (Hands-Free) לשיפור שטף הדיבור',
-        'סימולציות למצבי קונפליקט, מכירה וניהול משא ומתן מורכב',
-        'כלים מעשיים לחיזוק סמכותיות, שכנוע והעברת מסרים',
-        'ניתוח מובנה של טיעונים עסקיים ומענה על התנגדויות'
-      ]
+      content: 'סימולטור קולי חכם המאמן אותך בניהול שיחות שכר, מצגות, מכירות ומו"מ עסקי לבניית ביטחון עצמי ועוצמה תקשורתית.',
+      features: ['תרגול קולי חופשי (Hands-Free)', 'סימולציות למצבי קונפליקט ומכירה', 'כלים לחיזוק סמכותיות ושכנוע']
     },
     sports: {
       title: '🏋️‍♀️ ספורט, כושר ומחזור חיים (40+)',
-      content: 'תוכנית אימון גופני ומנטלי מותאמת אישית, המתמקדת בחיזוק השרירים, בניית עצם, שימור אנרגיה גבוהה ואיזון גוף-נפש המותאם לשגרת חיים עמוסה ותובענית.',
-      features: [
-        'אימוני כוח וחיזוק ממוקדים לטווח ארוך ולבריאות איתנה',
-        'התאמת עצימות האימונים לקצב הביולוגי ולמחזור החיים',
-        'שילוב תרגילי מתיחה, יציבה ושחרור מתחים מהיומיום',
-        'מעקב אנרגיה גופנית ומנטלית להשגת תוצאות מקסימליות'
-      ]
+      content: 'תוכנית אימון גופני ומנטלי מותאמת אישית לחיזוק השרירים, בניית עצם, שימור אנרגיה גבוהה ואיזון גוף-נפש לשגרת חיים עמוסה.',
+      features: ['אימוני כוח ממוקדים', 'התאמת אימונים לקצב הביולוגי', 'שילוב מתיחות ושחרור מתחים']
     },
     nutrition: {
       title: '🥗 סטודיו אנרגיה ותזונה אינטואיטיבית',
-      content: 'מרחב חכם לתכנון ארוחות מותאמות אישית, ניהול רמות האנרגיה היומיות ושמירה על תזונה נקה ומזינה המעניקה פוקוס וערנות גבוהה לאורך יום העבודה.',
-      features: [
-        'בניית תפריטים אינטואיטיביים המותאמים לעומס קוגניטיבי',
-        'טיפים ומתכונים מהירים לאנרגיה נקייה ויציבה בדם',
-        'מעקב תזונתי המשתלב בשגרת ניהול וקריירה',
-        'התאמת רכיבי מזון לחיזוק מערכת החיסון והריכוז'
-      ]
+      content: 'מרחב חכם לתכנון ארוחות מותאמות אישית, ניהול רמות האנרגיה היומיות ושמירה על תזונה נקייה ומזינה לפוקוס גבוה בעבודה.',
+      features: ['תפריטים מותאמים לעומס קוגניטיבי', 'טיפים ומתכונים מהירים לאנרגיה נקייה', 'מעקב תזונתי לקריירה']
     },
     focus: {
       title: '⚡ ניהול זמן ועדיפויות (95/5 Focus Matrix)',
-      content: 'כלי ניהול משימות אסתטי ומינימליסטי המיישם את עקרון ה-95/5: זיהוי מדויק של 5% הפעולות שיוצרות 95% מההשפעה והתוצאות בעסק ובחיים האישיים.',
-      features: [
-        'סינון רעשים וביצוע "ניקוי אורוות" למשימות לא חיוניות',
-        'מיקוד יומי חד, מהיר ויעיל היישר מהסמארטפון',
-        'חלוקת משימות לפי השפעה עסקית ואישית גבוהה',
-        'ניהול לו"ז נקי המפנה זמן פנוי למנוחה ויצירה'
-      ]
+      content: 'כלי ניהול משימות המיישם את עקרון ה-95/5: זיהוי מדויק של 5% הפעולות שיוצרות 95% מההשפעה והתוצאות בעסק ובחיים.',
+      features: ['סינון רעשים וניהול משימות אפקטיבי', 'מיקוד יומי חד ומהיר מהנייד', 'חלוקת משימות לפי השפעה עסקית']
     },
     journal: {
       title: '📖 יומן השראה וקבלת החלטות (Strategic Journal)',
-      content: 'מרחב כתיבה אישי ומוצפן המיועד לתיעוד החלטות אסטרטגיות, ניתוח דילמות מקצועיות, וגיבוש תובנות עומק מתוך מחשבה נקייה וממוקדת.',
-      features: [
-        'תיעוד שיטתי של החלטות מפתח בקריירה ובמיזמים',
-        'מסגרת מחשבתית לניתוח תרחישים וקבלת החלטות מושכלת',
-        'מרחב אישי לכתיבת השראה, חזון ויעדים ארוכי טווח',
-        'שמירה מאובטחת מלאה של הנתונים בענן ובזיכרון המקומי'
-      ]
+      content: 'מרחב כתיבה אישי ומוצפן לתיעוד החלטות אסטרטגיות, ניתוח דילמות מקצועיות וגיבוש תובנות עומק מתוך מחשבה נקייה.',
+      features: ['תיעוד שיטתי של החלטות מפתח', 'מסגרת מחשבתית לניתוח תרחישים', 'שמירה מאובטחת מלאה בענן ובמקומי']
     },
     branding: {
       title: '✨ סטודיו מיתוג ועיצוב דיגיטלי (Micro-Branding)',
-      content: 'מחולל קונספטים ויזואליים המאגד את שפת המותג שלך (רוז-גולד, לבנדר, ואדריכלות ניקוי ויזואלי). מסייע ביצירת פלטות צבעים, מסרים שיווקיים וממשקים נקיים.',
-      features: [
-        'ניהול והגדרת פלטות צבעים מדויקות לזהות המותג',
-        'הפקת רעיונות ללוגואים, כותרות ומסרים שיווקיים מדויקים',
-        'יצירת קו ויזואלי אחיד לרשתות ולפלטפורמות הדיגיטליות',
-        'תכנון ממשקי משתמש מינימליסטיים, נשיים ויוקרתיים'
-      ]
+      content: 'מחולל קונספטים ויזואליים לאיגוד שפת המותג (רוז-גולד, לבנדר), יצירת פלטות צבעים, מסרים שיווקיים וממשקים נקיים.',
+      features: ['ניהול פלטות צבעים מדויקות למותג', 'הפקת רעיונות ללוגואים ומסרים', 'תכנון ממשקים נשיים ויוקרתיים']
     },
     capital: {
       title: '💎 ניהול פיננסי עצמאי ותקציב (Smart Capital)',
-      content: 'כלי בקרת תקציב וניהול פיננסי חכם למיזמים דיגיטליים, הוצאות שוטפות ופרויקטים עצמאיים, המציג תמונת מצב נקייה וברורה ללא סיבוכים מיותרים.',
-      features: [
-        'מעקב שוטף ומהיר אחר הוצאות והכנסות עסקיות ואישיות',
-        'תכנון תקציבי למיזמים דיגיטליים חדשים ולצמיחה',
-        'ניתוח פיננסי חכם לקבלת החלטות כלכליות בטוחות',
-        'דשורד ניהולי נקי, מודרני וקל לשימוש מהנייד'
-      ]
+      content: 'כלי בקרת תקציב וניהול פיננסי חכם למיזמים דיגיטליים, הוצאות שוטפות ופרויקטים עצמאיים לתמונת מצב נקייה וברורה.',
+      features: ['מעקב שוטף אחר הוצאות והכנסות', 'תכנון תקציבי למיזמים דיגיטליים', 'דשבורד ניהולי נקי ומודרני']
     },
     mindset: {
       title: '🧘‍♀️ מרחב שקט ומיינדפולנס (Calm & Mindset Vault)',
-      content: 'מקלט דיגיטלי שקט להורדת מתחים, תרגילי נשימה מונחים, ומדיטציות קצרות המיועדות לחידוש האנרגיה והפוקוס המנטלי רגע לפני פגישות או החלטות חשובות.',
-      features: [
-        'תרגילי נשימה קצרים (Box Breathing) להרגעה מיידית',
-        'משפטי חיזוק מנטליים והשראה לניהול יום מאוזן',
-        'כלי להורדת עומס מנטלי ויצירת שקט פנימי',
-        'מרחב התאוששות מהיר בין משימות עמוסות'
-      ]
+      content: 'מקלט דיגיטלי שקט להורדת מתחים, תרגילי נשימה מונחים ומדיטציות קצרות לחידוש האנרגיה והפוקוס לפני פגישות חשובות.',
+      features: ['תרגילי נשימה קצרים להרגעה', 'משפטי חיזוק מנטליים והשראה', 'יצירת שקט פנימי ואיזון']
     },
     negotiation: {
       title: '🗣️ סימולטור משא ומתן ושכנוע (Negotiation Lab)',
-      content: 'מעבדת סימולציות מתקדמת לתרגול אסטרטגיות שכנוע, סגירת חוזים, עמידה על עקרונות והגנה על האינטרסים העסקיים והאישיים שלך בביטחון מלא.',
-      features: [
-        'תרגול תרחישי משא ומתן מול גורמים שונים בשוק',
-        'גיבוש טיעונים חזקים ומבוססי לוגיקה עסקית',
-        'טכניקות מתקדמות לנטרול התנגדויות והגעה להסכמות',
-        'חיזוק תחושת המסוגלות והעוצמה במעמדי סגירת עסקה'
-      ]
+      content: 'מעבדת סימולציות מתקדמת לתרגול אסטרטגיות שכנוע, סגירת חוזים, עמידה על עקרונות והגנה על אינטרסים עסקיים בביטחון מלא.',
+      features: ['תרגול תרחישי משא ומתן שונים', 'גיבוש טיעונים מבוססי לוגיקה', 'טכניקות לנטרול התנגדויות']
     },
     automation: {
       title: '🤖 עוזר אוטומציות ותכנון תוכן (Content Hub)',
-      content: 'מרחב לתכנון קמפיינים שיווקיים, כתיבת פוסטים לרשתות החברתיות, ויצירת רעיונות לאוטומציות חכמות שחוסכות זמן יקר ומייצרות נוכחות דיגיטלית רציפה.',
-      features: [
-        'בניית לוח שנה שיווקי ותכנון קמפיינים בלחיצת כפתור',
-      'כתיבת טקסטים שיווקיים, ניוזלטרים ותוכן לרשתות',
-        'איתור תהליכים עסקיים שניתן להפוך לאוטומטיים לחלוטין',
-        'ניהול חכם של ערוצי השיווק הישירים שלך'
-      ]
+      content: 'מרחב לתכנון קמפיינים שיווקיים, כתיבת פוסטים לרשתות, ויצירת רעיונות לאוטומציות חכמות החוסכות זמן יקר ומייצרות נוכחות.',
+      features: ['בניית לוח שנה שיווקי וקמפיינים', 'כתיבת טקסטים וניוזלטרים', 'איתור תהליכים לאוטומציה']
     },
     career: {
       title: '🌐 ניהול קריירה ונטוורקינג חכם (Career Tracker)',
       content: 'מערכת לניהול קשרים מקצועיים, שיתופי פעולה, פגישות מפתח ותכנון אסטרטגי של צעדי ההתפתחות הבאים בעולם העסקים והקריירה.',
-      features: [
-        'מעקב שיטתי אחר שותפויות, קשרים והזדמנויות עסקיות',
-        'תכנון אבני דרך להתפתחות אישית ומקצועית',
-        'ניהול פגישות נטוורקינג והפקת לקחים אחריהן',
-        'מיפוי קשרים אסטרטגיים לקידום מיזמים משותפים'
-      ]
+      features: ['מעקב שיטתי אחר שותפויות וקשרים', 'תכנון אבני דרך להתפתחות', 'מיפוי קשרים אסטרטגיים למיזמים']
     },
     wellness: {
       title: '🩺 יומן בריאות מונעת ומדדים (Wellness Vault)',
-      content: 'כלי מעקב אישי מקיף לשנת לילה, מדדי חיוניות גופנית, והמלצות מותאמות לשמירה פרואקטיבית על אורח חיים מאוזן, בריא ואנרגטי.',
-      features: [
-        'מעקב אחר שגרת השינה, האיכות וההתאוששות הלילית',
-        'המלצות מותאמות לבריאות מונעת ואורח חיים מיטבי',
-        'מעקב אחר מדדי חיוניות גופניים ומנטליים שוטפים',
-        'יצירת שגרת טיפוח אישית המותאמת לקצב החיים שלך'
-      ]
+      content: 'כלי מעקב אישי מקיף לשנת לילה, מדדי חיוניות גופנית והמלצות מותאמות לשמירה פרואקטיבית על אורח חיים מאוזן ואנרגטי.',
+      features: ['מעקב שגרת שינה והתאוששות', 'המלצות לבריאות מונעת מיטבית', 'יצירת שגרת טיפוח אישית']
     },
     healthlog: {
       title: '🌿 יומן בריאות ואיזון גוף-נפש',
       content: 'יומן יומי עדין ומדויק לרישום תחושות, תזונה תומכת, טיפוח אישי וניהול האיזון העדין שבין הגוף והנפש לאורך החודש.',
-      features: [
-        'תיעוד יומי של רמות רווחה, אנרגיה ומצב רוח',
-        'המלצות מותאמות לתזונה ולטיפוח תומך גוף-נפש',
-        'מעקב אחר מחזורי אנרגיה אישיים וזמני מנוחה נדרשים',
-        'יצירת הרגלים קטנים שמחזקים את הבריאות הפנימית'
-      ]
+      features: ['תיעוד יומי של רווחה ואנרגיה', 'המלצות לתזונה וטיפוח תומך', 'מעקב אחר מחזורי אנרגיה']
     },
     style: {
       title: '👗 סטודיו סטייל, אופנה וטרנדים',
       content: 'מרחב יצירתי לתכנון מלתחה חכמה, שילובי צבעים מדויקים, קולקציות לבוש והשראה עיצובית לעולם האופנה והסטייל האישי.',
-      features: [
-        'תכנון מלתחה קפסולה מינימליסטית, יוקרתית ונוחה',
-        'שילובי פלטות צבעים וטרנדים מובילים באופנה ובסטייל',
-        'שמירת קונספטים לעיצוב אישי ולהופעות מוקפדות',
-        'השראה ויזואלית יומית המותאמת לטעם האישי שלך'
-      ]
+      features: ['תכנון מלתחה קפסולה מינימליסטית', 'שילובי פלטות צבעים וטרנדים', 'השראה ויזואלית יומית מוקפדת']
     },
     lifestyle: {
       title: '☕ מרחב פנאי, לייף סטייל וקפה',
-      content: 'פינת השראה מפנקת המוקדשת להפסקות קפה איכותיות, תכנון תרבות פנאי, קריאה, טיולים וטיפוח רגעים קטנים של שקט ואיכות חיים אמיתית.',
-      features: [
-        'המלצות ליצירת שגרת פנאי מעשירה ומרגיעה',
-        'תכנון רגעים של שקט, קפה וקריאה בתוך שגרת העומס',
-        'השראה לעיצוב מרחבי מגורים נעימים, חמים ומוארים',
-        'טיפוח תחביבים אישיים וחיבור לעולמות התרבות'
-      ]
+      content: 'פינת השראה מפנקת המוקדשת להפסקות קפה איכותיות, תכנון תרבות פנאי, קריאה, טיולים וטיפוח רגעים קטנים של שקט ואיכות חיים.',
+      features: ['המלצות לשגרת פנאי מעשירה', 'תכנון רגעים של שקט וקפה', 'השראה לעיצוב מרחבי מגורים']
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  const defaultHowToUse = [
+    'הקלד או דבר אל המיקרופון את השאלות שלך בצורה חופשית.',
+    'השתמש במערכת ישירות מהסמארטפון לניהול שוטף ומהיר.',
+    'הפק תובנות וקוד מותאם אישית לעבודה שלך מול GitHub ו-Netlify.'
+  ];
 
-    const q = query.toLowerCase();
+  const processQueryText = (text: string) => {
+    const q = text.toLowerCase();
     if (q.includes('מוזיקה') || q.includes('פלייליסט') || q.includes('שירים') || q.includes('סאונד')) setActiveCanvas(skillsData.music);
     else if (q.includes('ציפורניים') || q.includes('nail')) setActiveCanvas(skillsData.nail);
     else if (q.includes('קוד') || q.includes('code') || q.includes('אתר')) setActiveCanvas(skillsData.code);
@@ -222,11 +150,50 @@ export default function ClaudetPlatform() {
     else if (q.includes('לייף סטייל') || q.includes('פנאי') || q.includes('קפה')) setActiveCanvas(skillsData.lifestyle);
     else {
       setActiveCanvas({ 
-        title: `תוצאה עבור: "${query}"`, 
-        content: 'המנוע עיבד את הבקשה בהצלחה מתוך מאגר הנתונים המאובטח של Claudet.',
-        features: ['ניתוח חכם של הבקשה', 'התאמה מלאה לממשק הנייד', 'שמירה במאגר המקומי']
+        title: `תוצאה עבור: "${text}"`, 
+        content: 'המנוע עיבד את הבקשה הקולית בהצלחה מתוך מאגר הנתונים המאובטח של Claudet.',
+        howToUse: defaultHowToUse,
+        features: ['ניתוח קולי חכם', 'התאמה מלאה לממשק הנייד', 'שמירה במאגר המקומי']
       });
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    processQueryText(query);
+  };
+
+  const toggleVoiceSearch = () => {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      alert('הדפדפן שלך אינו תומך בזיהוי קולי ישיר. אנא השתמש בטקסט.');
+      return;
+    }
+
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognitionAPI();
+    recognition.lang = 'he-IL';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    setIsVoiceActive(true);
+
+    recognition.onresult = (event: any) => {
+      const speechToText = event.results[0][0].transcript;
+      setQuery(speechToText);
+      setIsVoiceActive(false);
+      processQueryText(speechToText);
+    };
+
+    recognition.onerror = () => {
+      setIsVoiceActive(false);
+    };
+
+    recognition.onend = () => {
+      setIsVoiceActive(false);
+    };
+
+    recognition.start();
   };
 
   return (
@@ -238,10 +205,9 @@ export default function ClaudetPlatform() {
       {/* Header */}
       <header className="p-6 flex justify-between items-center z-10 max-w-5xl mx-auto w-full">
         <div className="flex items-center gap-3">
-          {/* Original Asterisk Logo */}
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#E8A3B8] via-[#D8B4FE] to-[#FAF7F2] p-[1.5px] shadow-md shadow-purple-900/10">
-            <div className="w-full h-full bg-[#FAF7F2] rounded-[14px] flex items-center justify-center relative overflow-hidden">
-              <span className="text-xl font-serif text-[#9D4EDD] font-bold tracking-tighter select-none">✳︎</span>
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#4A1D59] via-[#2B0F38] to-[#1A0824] p-[1.5px] shadow-md shadow-purple-950/30 border border-[#E8A3B8]/40">
+            <div className="w-full h-full bg-[#240C30] rounded-[14px] flex items-center justify-center relative overflow-hidden">
+              <span className="text-xl font-serif text-[#E8A3B8] font-bold tracking-tighter select-none scale-125">✳︎</span>
             </div>
           </div>
           <div>
@@ -253,22 +219,22 @@ export default function ClaudetPlatform() {
         <div className="flex items-center gap-2">
           <button 
             onClick={runSelfDiagnostics}
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium bg-white/80 border border-purple-200 text-purple-900 hover:bg-purple-50 transition-all shadow-sm"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium bg-white/85 border border-purple-200 text-purple-900 hover:bg-purple-50 transition-all shadow-sm"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
             <span>בדוק יכולות מערכת</span>
           </button>
 
           <button 
-            onClick={() => setIsVoiceActive(!isVoiceActive)}
+            onClick={toggleVoiceSearch}
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all shadow-sm ${
               isVoiceActive 
                 ? 'bg-rose-100 text-rose-800 border border-rose-300 animate-pulse' 
-                : 'bg-white/80 border border-purple-100 text-purple-900 hover:bg-purple-100/50'
+                : 'bg-white/85 border border-purple-100 text-purple-900 hover:bg-purple-100/50'
             }`}
           >
             <Mic className="w-3.5 h-3.5 text-[#E8A3B8]" />
-            <span>{isVoiceActive ? 'מצב קולי פעיל' : 'Hands-Free'}</span>
+            <span>{isVoiceActive ? 'מקשיב לך עכשיו...' : 'Hands-Free (קולי)'}</span>
           </button>
         </div>
       </header>
@@ -290,7 +256,7 @@ export default function ClaudetPlatform() {
             מה תרצי ליצור היום?
           </h1>
           <p className="text-sm md:text-base text-[#6B5B7A] max-w-lg mx-auto">
-            פלטפורמת בינה עדינה הכוללת את כל 18 הסקילים המפורטים והאינטראקטיביים שלך.
+            פלטפורמת בינה עדינה הכוללת את כל 18 הסקילים שלך עם הפעלה קולית ישירה ומדריכי שימוש.
           </p>
         </div>
 
@@ -314,7 +280,7 @@ export default function ClaudetPlatform() {
           </div>
         </form>
 
-        {/* All Starters Grid (All 18 Detailed Skills) */}
+        {/* All Starters Grid */}
         <div className="flex flex-wrap justify-center gap-2 max-w-3xl">
           {[
             { label: '🎵 מוזיקה ופלייליסטים', key: 'music' },
@@ -342,7 +308,7 @@ export default function ClaudetPlatform() {
                 setQuery(item.label);
                 setActiveCanvas(skillsData[item.key]);
               }}
-              className="text-xs bg-white/70 hover:bg-white border border-purple-100 hover:border-purple-300 text-[#4A3B5C] px-3.5 py-2 rounded-full transition-all shadow-sm hover:shadow"
+              className="text-xs bg-white/75 hover:bg-white border border-purple-100 hover:border-purple-300 text-[#4A3B5C] px-3.5 py-2 rounded-full transition-all shadow-sm hover:shadow"
             >
               {item.label}
             </button>
@@ -350,7 +316,7 @@ export default function ClaudetPlatform() {
         </div>
       </main>
 
-      {/* Micro-UI Active Canvas Drawer with Detailed Capabilities */}
+      {/* Micro-UI Active Canvas Drawer */}
       {activeCanvas && (
         <div className="fixed inset-y-0 left-0 w-full md:w-[500px] bg-[#FAF7F2] border-r border-purple-200 p-6 z-50 shadow-2xl transition-all flex flex-col justify-between overflow-y-auto">
           <div>
@@ -369,6 +335,21 @@ export default function ClaudetPlatform() {
               <p className="bg-purple-50/80 p-4 rounded-xl border border-purple-100/60 leading-relaxed font-normal">
                 {activeCanvas.content}
               </p>
+
+              {activeCanvas.howToUse && (
+                <div className="bg-gradient-to-r from-purple-900 to-[#3C2A4D] text-white p-4 rounded-xl shadow-md space-y-2 border border-purple-400/40">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#E8A3B8] uppercase tracking-wider">
+                    <span className="animate-pulse">✨</span>
+                    <span>איך להשתמש בסקיל בצורה הטובה ביותר:</span>
+                  </div>
+                  <ul className="text-xs text-purple-100 space-y-2 list-disc list-inside leading-relaxed">
+                    {activeCanvas.howToUse.map((step, i) => (
+                      <li key={i}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {activeCanvas.features && (
                 <div className="bg-white p-4 rounded-xl border border-purple-100 space-y-2 shadow-sm">
                   <span className="text-xs font-semibold text-purple-900 block uppercase tracking-wider mb-2">יכולות מורחבות במודול:</span>
