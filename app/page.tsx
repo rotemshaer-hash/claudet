@@ -16,14 +16,16 @@ export default function ClaudetPlatform() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('claudet_dark_mode') === 'true';
-    setIsDarkMode(savedTheme);
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('claudet_dark_mode') === 'true';
+      setIsDarkMode(savedTheme);
 
-    const savedFavs = localStorage.getItem('claudet_favs');
-    if (savedFavs) setFavorites(JSON.parse(savedFavs));
+      const savedFavs = localStorage.getItem('claudet_favs');
+      if (savedFavs) setFavorites(JSON.parse(savedFavs));
 
-    const savedHistory = localStorage.getItem('claudet_history');
-    if (savedHistory) setSearchHistory(JSON.parse(savedHistory));
+      const savedHistory = localStorage.getItem('claudet_history');
+      if (savedHistory) setSearchHistory(JSON.parse(savedHistory));
+    }
   }, []);
 
   const triggerHaptic = () => {
@@ -42,14 +44,18 @@ export default function ClaudetPlatform() {
       updated = [...favorites, key];
     }
     setFavorites(updated);
-    localStorage.setItem('claudet_favs', JSON.stringify(updated));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('claudet_favs', JSON.stringify(updated));
+    }
   };
 
   const toggleDarkMode = () => {
     triggerHaptic();
     const next = !isDarkMode;
     setIsDarkMode(next);
-    localStorage.setItem('claudet_dark_mode', String(next));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('claudet_dark_mode', String(next));
+    }
   };
 
   const runSelfDiagnostics = () => {
@@ -172,7 +178,9 @@ export default function ClaudetPlatform() {
 
     const updatedHistory = [text, ...searchHistory.filter(h => h !== text)].slice(0, 5);
     setSearchHistory(updatedHistory);
-    localStorage.setItem('claudet_history', JSON.stringify(updatedHistory));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('claudet_history', JSON.stringify(updatedHistory));
+    }
 
     setTimeout(() => {
       setIsLoadingAI(false);
@@ -262,13 +270,16 @@ export default function ClaudetPlatform() {
   const copyToClipboard = () => {
     if (!activeCanvas) return;
     const textToCopy = `${activeCanvas.title}\n\n${activeCanvas.content}\n\n${activeCanvas.aiAnswer || ''}`;
-    navigator.clipboard.writeText(textToCopy);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    if (typeof window !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(textToCopy);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
   };
 
   const toggleVoiceSearch = () => {
     triggerHaptic();
+    if (typeof window === 'undefined') return;
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
       alert('הדפדפן שלך אינו תומך בזיהוי קולי ישיר. אנא השתמש בטקסט.');
       return;
