@@ -64,7 +64,7 @@ export default function ClaudetPlatform() {
     setTimeout(() => setTestResult(null), 6000);
   };
 
-  const skillsData: Record<string, { title: string; content: string; howToUse: string[]; features: string[] }> = {
+  const skillsData: Record<string, { title: string; content: string; howToUse?: string[]; features?: string[] }> = {
     music: {
       title: '🎵 סטודיו מוזיקה, פלייליסטים והשראה קולית',
       content: 'מרחב מוקפד המשלב מחולל פלייליסטים חכם המותאם למצב הרוח שלך, סאונד ממוקד לריכוז עמוק בעבודה, פודקאסטים להעצמה אישית, וחיבור לקצב פנימי.',
