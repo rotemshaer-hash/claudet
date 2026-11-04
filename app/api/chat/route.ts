@@ -9,8 +9,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: 'שגיאה: מפתח ה-API אינו מוגדר.' });
     }
 
-    // שימוש בנתיב v1 היציב לחלוטין
-    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // שימוש במודל העדכני gemini-2.0-flash בגרסת v1
+    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
