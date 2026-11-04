@@ -56,32 +56,12 @@ export default function ClaudetPlatform() {
 
   const runSelfDiagnostics = () => {
     triggerHaptic();
-    setTestResult('מריץ בדיקת מערכת: צ\'אט שיחות AI זורם פעיל בהצלחה.');
+    setTestResult('מריץ בדיקת מערכת: חיבור לשרת ה-API פעיל.');
     setTimeout(() => setTestResult(null), 5000);
   };
 
-  const skillsResponses: Record<string, string> = {
-    music: 'סטודיו המוזיקה מוכן. איזה סאונד או פלייליסט תרצה ליצור כדי להעלות את הפוקוס בעבודה?',
-    nail: 'סטודיו האסתטיקה פתוח. אילו גוונים או פלטות צבעים יוקרתיות תרצה שנתכנן כעת?',
-    code: 'עורך הקוד פעיל. איזה רכיב Next.js או פריסה מול Netlify נרצה לפתח או לתקן?',
-    voice: 'מאמן הדיבור והמו"מ מוכן. איזו סימולציה או שיחה חשובה תרצה שנתרגל יחד?',
-    sports: 'תוכנית הכושר והאנרגיה טעונה. אילו אימונים נתאים לשגרת החיים העמוסה שלך?',
-    nutrition: 'סטודיו התזונה מוכן. איזה תפריט נקי ומזין נבנה כדי לשמור על ערנות גבוהה?',
-    focus: 'מטריצת 95/5 פעילה. מה המשימה החשובה ביותר שתרצה שנתמקד בה כרגע?',
-    journal: 'יומן ההחלטות האסטרטגי פתוח. איזו דילמה או החלטה מקצועית תרצה שננתח לעומק?',
-    branding: 'סטודיו המיתוג מוכן. איזה קונספט ויזואלי או מסר שיווקי נפתח כעת?',
-    capital: 'הדשבורד הפיננסי פעיל. על איזה תקציב או הוצאות שוטפות למיזם נרצה לעבור?',
-    mindset: 'מרחב המיינדפולנס פתוח. קח רגע שקט, תרגל נשימה עמוקה וספר לי מה מעסיק אותך.',
-    negotiation: 'מעבדת המשא ומתן מוכנה. אילו טיעונים או תנאים נרצה לגבש לקראת סגירה?',
-    automation: 'עוזר האוטומציות והתוכן מוכן. איזה קמפיין או פוסט שיווקי נכתוב עכשיו?',
-    career: 'מעקב הקריירה פעיל. אילו שותפויות או קשרים אסטרטגיים נרצה לתכנן?',
-    wellness: 'יומן הבריאות המונעת פתוח. איך נראית שגרת השינה וההתאוששות שלך בימים אלה?',
-    healthlog: 'יומן האיזון גוף-נפש מוכן. מה מצב האנרגיה שלך לאורך השבוע?',
-    style: 'סטודיו הסטייל והאופנה פתוח. איזה קונספט לבוש או מלתחה חכמה נתכנן?',
-    lifestyle: 'מרחב הפנאי והלייף סטייל מוכן. איזה רגע של שקט או הפסקת קפה איכותית נשלב?'
-  };
-
-  const processQueryText = (text: string) => {
+  // פונקציה ששולחת את השאלה אל ה-API שלנו ומקבלת תשובה חיה
+  const processQueryText = async (text: string) => {
     triggerHaptic();
     setIsLoadingAI(true);
 
@@ -91,35 +71,15 @@ export default function ClaudetPlatform() {
       localStorage.setItem('claudet_history', JSON.stringify(updatedHistory));
     }
 
-    setTimeout(() => {
-      setIsLoadingAI(false);
-      const q = text.toLowerCase();
-
-      let matchedKey = Object.keys(skillsResponses).find(key => {
-        if (key === 'music' && (q.includes('מוזיקה') || q.includes('פלייליסט') || q.includes('שירים') || q.includes('סאונד') || q.includes('music'))) return true;
-        if (key === 'nail' && (q.includes('ציפורניים') || q.includes('אסתטיקה') || q.includes('nail'))) return true;
-        if (key === 'code' && (q.includes('קוד') || q.includes('אתר') || q.includes('saas') || q.includes('code') || q.includes('ללמוד'))) return true;
-        if (key === 'voice' && (q.includes('דיבור') || q.includes('מו"מ') || q.includes('פודקאסט') || q.includes('voice'))) return true;
-        if (key === 'sports' && (q.includes('ספורט') || q.includes('כושר') || q.includes('sports'))) return true;
-        if (key === 'nutrition' && (q.includes('תזונה') || q.includes('אנרגיה') || q.includes('nutrition') || q.includes('אוכל'))) return true;
-        if (key === 'focus' && (q.includes('זמן') || q.includes('עדיפויות') || q.includes('95') || q.includes('focus') || q.includes('ניהול זמן'))) return true;
-        if (key === 'journal' && (q.includes('השראה') || q.includes('יומן') || q.includes('החלטות') || q.includes('journal'))) return true;
-        if (key === 'branding' && (q.includes('מיתוג') || q.includes('עיצוב') || q.includes('branding'))) return true;
-        if (key === 'capital' && (q.includes('פיננסי') || q.includes('תקציב') || q.includes('כסף') || q.includes('capital'))) return true;
-        if (key === 'mindset' && (q.includes('שקט') || q.includes('מיינדפולנס') || q.includes('נשימה') || q.includes('mindset'))) return true;
-        if (key === 'negotiation' && (q.includes('משא ומתן') || q.includes('שכר') || q.includes('negotiation'))) return true;
-        if (key === 'automation' && (q.includes('אוטומציות') || q.includes('תוכן') || q.includes('קמפיין') || q.includes('automation'))) return true;
-        if (key === 'career' && (q.includes('קריירה') || q.includes('נטוורקינג') || q.includes('career'))) return true;
-        if (key === 'wellness' && (q.includes('בריאות מונעת') || q.includes('מדדים') || q.includes('wellness') || q.includes('שינה'))) return true;
-        if (key === 'healthlog' && (q.includes('בריאות') || q.includes('איזון') || q.includes('health'))) return true;
-        if (key === 'style' && (q.includes('סטייל') || q.includes('אופנה') || q.includes('לבוש') || q.includes('style'))) return true;
-        if (key === 'lifestyle' && (q.includes('לייף סטייל') || q.includes('פנאי') || q.includes('קפה') || q.includes('lifestyle'))) return true;
-        return false;
+    try {
+      // שליחת השאלה אל קובץ ה-API שיצרנו בשרת
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: text })
       });
-
-      const aiReply = matchedKey 
-        ? skillsResponses[matchedKey] 
-        : `שמעתי אותך מצוין. לשאלתך ("${text}"), אני כאן כדי ללוות אותך שלב אחר שלב. בוא נפתח את זה לעומק – מה הצעד הבא שתרצה שנדייק יחד?`;
+      const data = await res.json();
+      const aiReply = data.reply || 'תשובה ריקה מהשרת.';
 
       setActiveTitle("שיחת AI פעילה");
       setChatMessages(prev => [
@@ -127,7 +87,15 @@ export default function ClaudetPlatform() {
         { role: 'user', text: text },
         { role: 'ai', text: aiReply }
       ]);
-    }, 400);
+    } catch (err) {
+      setChatMessages(prev => [
+        ...prev,
+        { role: 'user', text: text },
+        { role: 'ai', text: 'שגיאה בתקשורת מול השרת. אנא נסה שוב.' }
+      ]);
+    } finally {
+      setIsLoadingAI(false);
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -159,7 +127,7 @@ export default function ClaudetPlatform() {
     triggerHaptic();
     if (typeof window === 'undefined') return;
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      alert('הדפדפן שלך אינו תומך בזיהוי קולי ישיר. אנא השתמש בטקסט.');
+      alert('הדפדפן שלך אינו תומך בזיהוי קולי ישיר.');
       return;
     }
 
@@ -208,7 +176,7 @@ export default function ClaudetPlatform() {
     <div className={`min-h-screen flex flex-col justify-between font-sans relative overflow-hidden transition-colors duration-500 ${
       isDarkMode ? 'bg-[#120A18] text-[#F4EEF5]' : 'bg-gradient-to-br from-[#FDFBF7] via-[#F4EEF5] to-[#EAE0EE] text-[#2C2638]'
     }`} dir="rtl">
-      {/* Background Soft Glows */}
+      {/* Background Glows */}
       <div className={`absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[600px] blur-[120px] pointer-events-none rounded-full transition-colors duration-500 ${
         isDarkMode ? 'bg-purple-900/20' : 'bg-pink-200/30'
       }`} />
@@ -275,18 +243,18 @@ export default function ClaudetPlatform() {
         </div>
       )}
 
-      {/* Main Hero & Search Area */}
+      {/* Main Hero Area */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 max-w-4xl mx-auto w-full z-10 text-center -mt-6">
         <div className="space-y-3 mb-8">
           <h1 className={`text-4xl md:text-5xl font-serif font-light tracking-tight leading-snug ${isDarkMode ? 'text-[#FDFBF7]' : 'text-[#2A1B3D]'}`}>
             מה תרצי ליצור היום?
           </h1>
           <p className={`text-sm md:text-base max-w-lg mx-auto ${isDarkMode ? 'text-purple-200/70' : 'text-[#6B5B7A]'}`}>
-            פלטפורמת בינה עדינה עם מועדפים, היסטוריה, מצב לילה ומנוע AI חכם לכל 18 הסקילים שלך.
+            פלטפורמת בינה עדינה עם מועדפים, היסטוריה, מצב לילה ומנוע API חכם לכל 18 הסקילים שלך.
           </p>
         </div>
 
-        {/* Big Prominent Search Box */}
+        {/* Search Box */}
         <form onSubmit={handleSearch} className="w-full relative group mb-4">
           <div className="absolute -inset-1 bg-gradient-to-r from-[#E8A3B8]/40 via-purple-300/30 to-pink-300/40 rounded-3xl blur-md opacity-50 group-hover:opacity-90 transition duration-500" />
           <div className={`relative backdrop-blur-md border rounded-2xl flex items-center p-2 shadow-xl transition-colors duration-300 ${
@@ -311,7 +279,7 @@ export default function ClaudetPlatform() {
           </div>
         </form>
 
-        {/* Search History Chips */}
+        {/* Search History */}
         {searchHistory.length > 0 && (
           <div className="flex items-center justify-center gap-1.5 flex-wrap mb-6 text-xs">
             <span className={`flex items-center gap-1 opacity-70 ${isDarkMode ? 'text-purple-300' : 'text-purple-900'}`}>
@@ -320,13 +288,9 @@ export default function ClaudetPlatform() {
             {searchHistory.map((item, idx) => (
               <button
                 key={idx}
-                onClick={() => {
-                  processQueryText(item);
-                }}
+                onClick={() => processQueryText(item)}
                 className={`px-2.5 py-1 rounded-full border transition-all ${
-                  isDarkMode 
-                    ? 'bg-[#1C0D26] border-purple-900 text-purple-200 hover:bg-[#2A133B]' 
-                    : 'bg-white/60 border-purple-100 text-purple-900 hover:bg-white'
+                  isDarkMode ? 'bg-[#1C0D26] border-purple-900 text-purple-200 hover:bg-[#2A133B]' : 'bg-white/60 border-purple-100 text-purple-900 hover:bg-white'
                 }`}
               >
                 {item}
@@ -335,7 +299,7 @@ export default function ClaudetPlatform() {
           </div>
         )}
 
-        {/* Favorites Quick Row */}
+        {/* Favorites */}
         {favorites.length > 0 && (
           <div className="mb-4 w-full">
             <div className={`text-xs font-semibold mb-2 flex items-center justify-center gap-1 ${isDarkMode ? 'text-amber-300' : 'text-purple-900'}`}>
@@ -345,9 +309,7 @@ export default function ClaudetPlatform() {
               {allSkillsList.filter(s => favorites.includes(s.key)).map((item) => (
                 <button
                   key={item.key}
-                  onClick={() => {
-                    processQueryText(item.label);
-                  }}
+                  onClick={() => processQueryText(item.label)}
                   className="text-xs bg-gradient-to-r from-purple-900/80 to-rose-950/80 border border-purple-400/40 text-purple-100 px-3.5 py-2 rounded-full transition-all shadow-sm flex items-center gap-1.5"
                 >
                   <span>{item.label}</span>
@@ -357,16 +319,14 @@ export default function ClaudetPlatform() {
           </div>
         )}
 
-        {/* All Starters Grid */}
+        {/* Skills Grid */}
         <div className="flex flex-wrap justify-center gap-2 max-w-3xl">
           {allSkillsList.map((item) => {
             const isFav = favorites.includes(item.key);
             return (
               <button
                 key={item.key}
-                onClick={() => {
-                  processQueryText(item.label);
-                }}
+                onClick={() => processQueryText(item.label)}
                 className={`group relative text-xs border px-3.5 py-2 rounded-full transition-all shadow-sm flex items-center gap-2 ${
                   isDarkMode 
                     ? 'bg-[#1C0D26]/80 border-purple-900/80 text-purple-200 hover:bg-[#281238] hover:border-purple-600' 
@@ -386,7 +346,7 @@ export default function ClaudetPlatform() {
         </div>
       </main>
 
-      {/* Micro-UI Active Conversational Drawer */}
+      {/* Chat Drawer */}
       {activeTitle && (
         <div className={`fixed inset-y-0 left-0 w-full md:w-[500px] border-r p-6 z-50 shadow-2xl transition-all flex flex-col justify-between overflow-y-auto ${
           isDarkMode ? 'bg-[#180C22] border-purple-900 text-[#F4EEF5]' : 'bg-[#FAF7F2] border-purple-200 text-[#2C2638]'
@@ -414,7 +374,7 @@ export default function ClaudetPlatform() {
               </div>
             </div>
 
-            {/* Chat Messages Stream */}
+            {/* Chat Messages */}
             <div className="space-y-4 mb-6">
               {chatMessages.map((msg, idx) => (
                 <div key={idx} className={`p-4 rounded-xl border text-xs leading-relaxed ${
@@ -430,13 +390,13 @@ export default function ClaudetPlatform() {
               ))}
               {isLoadingAI && (
                 <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-900 text-xs text-purple-300 animate-pulse text-center">
-                  מנסח תשובה...
+                  מנסח תשובה מול השרת...
                 </div>
               )}
             </div>
           </div>
 
-          {/* Follow-up chat box inside drawer */}
+          {/* Follow-up input */}
           <div className={`pt-4 border-t mt-6 space-y-3 ${isDarkMode ? 'border-purple-900' : 'border-purple-100'}`}>
             <form onSubmit={handleFollowUp} className="flex items-center gap-2">
               <input 
