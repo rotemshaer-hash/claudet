@@ -9,7 +9,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: 'שגיאה: מפתח ה-API של גוגל אינו מוגדר ב-Netlify.' });
     }
 
-    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    // שימוש במודל העדכני של גוגל
+    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -19,14 +20,12 @@ export async function POST(req: Request) {
 
     const data = await apiRes.json();
     
-    // בדיקה האם יש תשובה תקינה מה-API של גוגל
     if (data && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
       const reply = data.candidates[0].content.parts[0].text;
       return NextResponse.json({ reply });
     } else {
-      // במקרה שהמבנה שונה, נחזיר את ההודעה המלאה כדי שנראה מה גוגל החזיר
       return NextResponse.json({ 
-        reply: `תשובה גולמית מהשרת: ${JSON.stringify(data)}` 
+        reply: `שגיאה בתשובת השרת: ${JSON.stringify(data)}` 
       });
     }
 
