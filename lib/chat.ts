@@ -145,36 +145,30 @@ export async function googleRequest(
   const { key } = config();
   const timeout = AbortSignal.timeout(timeoutMs);
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
-  try {
-    const send = (target = path) =>
-      fetcher("https://generativelanguage.googleapis.com/v1beta/" + target, {
+  const canRetry = init.method === "POST";
+  const attempt = async (target: string, attemptSignal: AbortSignal) => {
+    const res = await fetcher(
+      "https://generativelanguage.googleapis.com/v1beta/" + target,
+      {
         ...init,
         headers: {
           "Content-Type": "application/json",
           "x-goog-api-key": key,
           ...init.headers,
         },
-        signal: combined,
+        signal: attemptSignal,
         cache: "no-store",
-      });
-    let res = await send();
-    if (init.method === "POST" && [500, 502, 503, 504].includes(res.status)) {
-      // Retry transient provider failures once, within the original deadline.
+      },
+    );
+    if ([500, 502, 503, 504].includes(res.status)) {
       await res.body?.cancel();
-      await delay(400, undefined, { signal: combined });
-      // Use an independent model for the second attempt when the default
-      // model is unavailable. Keep the same prompt, key and deadline.
-      const fallback =
-        path === "models/gemini-3.5-flash-lite:generateContent"
-          ? "models/gemini-3.8-flash:generateContent"
-          : path;
-      res = await send(fallback);
+      return { retryStatus: res.status } as const;
     }
     let data;
     try {
       data = await res.json();
     } catch (error) {
-      if (combined.aborted) throw error;
+      if (attemptSignal.aborted) throw error;
       if (!res.ok) throw providerError(res.status);
       throw new ChatError(
         "UPSTREAM_UNAVAILABLE",
@@ -188,7 +182,56 @@ export async function googleRequest(
       );
       throw providerError(res.status, data);
     }
-    return data;
+    return { data } as const;
+  };
+  try {
+    if (!canRetry) {
+      const result = await attempt(path, combined);
+      if (result.retryStatus) throw providerError(result.retryStatus);
+      return result.data;
+    }
+
+    // Reserve part of the server deadline for a second model, even if the
+    // primary stalls while producing or transferring the response.
+    const primaryDeadline = AbortSignal.timeout(
+      Math.max(1, Math.floor(timeoutMs * 0.48)),
+    );
+    const primarySignal = AbortSignal.any([combined, primaryDeadline]);
+    try {
+      const first = await attempt(path, primarySignal);
+      if (!first.retryStatus) return first.data;
+      console.warn(
+        JSON.stringify({
+          event: "gemini_primary_retry",
+          status: first.retryStatus,
+        }),
+      );
+      await delay(400, undefined, { signal: combined });
+    } catch (error) {
+      if (
+        !primaryDeadline.aborted ||
+        combined.aborted ||
+        error instanceof ChatError
+      )
+        throw error;
+      console.warn(JSON.stringify({ event: "gemini_primary_timeout" }));
+    }
+
+    const fallback =
+      path === "models/gemini-3.5-flash-lite:generateContent"
+        ? "models/gemini-3.8-flash:generateContent"
+        : path;
+    const second = await attempt(fallback, combined);
+    if (second.retryStatus) {
+      console.warn(
+        JSON.stringify({
+          event: "gemini_fallback_http_error",
+          status: second.retryStatus,
+        }),
+      );
+      throw providerError(second.retryStatus);
+    }
+    return second.data;
   } catch (e) {
     if (e instanceof ChatError) throw e;
     if (signal?.aborted) throw new ChatError("CANCELLED", 499, "הבקשה בוטלה.");

@@ -210,6 +210,34 @@ describe("configuration and provider", () => {
       googleRequest("models/test", {}, undefined, f as typeof fetch, 5),
     ).rejects.toMatchObject({ code: "TIMEOUT" });
   });
+  it("switches models when the primary stalls before the overall deadline", async () => {
+    const f = vi
+      .fn<typeof fetch>()
+      .mockImplementationOnce(
+        (_url, init) =>
+          new Promise((_, reject) => {
+            const signal = init?.signal;
+            if (signal?.aborted) reject(signal.reason);
+            else
+              signal?.addEventListener("abort", () => reject(signal.reason), {
+                once: true,
+              });
+          }),
+      )
+      .mockResolvedValueOnce(Response.json({ recovered: true }));
+    await expect(
+      googleRequest(
+        "models/gemini-3.5-flash-lite:generateContent",
+        { method: "POST" },
+        undefined,
+        f,
+        200,
+      ),
+    ).resolves.toEqual({ recovered: true });
+    expect(f).toHaveBeenCalledTimes(2);
+    expect(f.mock.calls[1][0]).toContain("gemini-3.8-flash:generateContent");
+    expect(f.mock.calls[1][1]?.signal?.aborted).toBe(false);
+  });
 });
 describe("request boundaries", () => {
   it("recovers from a temporary Gemini generation failure", async () => {
