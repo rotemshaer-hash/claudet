@@ -1,3 +1,4 @@
+import { setTimeout as delay } from "node:timers/promises";
 import { getSkill } from "./skills";
 import type { ChatTurn } from "./contracts";
 export type { ChatTurn } from "./contracts";
@@ -12,6 +13,7 @@ export type ChatErrorCode =
   | "PERMISSION_DENIED"
   | "MODEL_UNAVAILABLE"
   | "RATE_LIMITED"
+  | "PROVIDER_REJECTED"
   | "UPSTREAM_UNAVAILABLE"
   | "TIMEOUT"
   | "BLOCKED"
@@ -97,6 +99,12 @@ export function providerError(status: number, body?: unknown): ChatError {
       503,
       "מפתח Google אינו תקין. נדרשת בדיקת הגדרת השרת.",
     );
+  if (status === 400)
+    return new ChatError(
+      "PROVIDER_REJECTED",
+      502,
+      "Google דחתה את הבקשה. אפשר לנסות לפתוח שיחה חדשה.",
+    );
   if (status === 401)
     return new ChatError(
       "KEY_INVALID",
@@ -138,9 +146,8 @@ export async function googleRequest(
   const timeout = AbortSignal.timeout(timeoutMs);
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
   try {
-    const res = await fetcher(
-      "https://generativelanguage.googleapis.com/v1beta/" + path,
-      {
+    const send = () =>
+      fetcher("https://generativelanguage.googleapis.com/v1beta/" + path, {
         ...init,
         headers: {
           "Content-Type": "application/json",
@@ -149,19 +156,32 @@ export async function googleRequest(
         },
         signal: combined,
         cache: "no-store",
-      },
-    );
+      });
+    let res = await send();
+    if (init.method === "POST" && [500, 502, 503, 504].includes(res.status)) {
+      // Retry transient provider failures once, within the original deadline.
+      await res.body?.cancel();
+      await delay(400, undefined, { signal: combined });
+      res = await send();
+    }
     let data;
     try {
       data = await res.json();
-    } catch {
+    } catch (error) {
+      if (combined.aborted) throw error;
+      if (!res.ok) throw providerError(res.status);
       throw new ChatError(
         "UPSTREAM_UNAVAILABLE",
         502,
         "שירות ה־AI החזיר תשובה שאינה תקינה.",
       );
     }
-    if (!res.ok) throw providerError(res.status, data);
+    if (!res.ok) {
+      console.warn(
+        JSON.stringify({ event: "gemini_http_error", status: res.status }),
+      );
+      throw providerError(res.status, data);
+    }
     return data;
   } catch (e) {
     if (e instanceof ChatError) throw e;
@@ -191,7 +211,7 @@ export async function generateReply(
           parts: [
             {
               text:
-                "את Claudet, עוזרת יצירתית ומעשית. השיבי בעברית אלא אם התבקשת אחרת. הציגי תשובה ישירה ומסודרת. אין לך חיפוש באינטרנט או יכולת לבצע פעולות בשירותים חיצוניים; אמרי זאת כשנדרש ואל תמציאי מקור או ביצוע. " +
+                "את Claudet, עוזרת יצירתית ומעשית. השיבי בשפת המשתמש, בעברית כברירת מחדל, ושמרי על לשון פנייה עקבית. התחילי בתשובה שימושית והוסיפי שאלות קצרות רק אם הן משנות את התוצאה. הפרידי עובדות מהנחות ואל תמציאי פרטים. אין לך חיפוש באינטרנט או יכולת לבצע פעולות בשירותים חיצוניים; אמרי זאת כשנדרש ואל תמציאי מקור או ביצוע. " +
                 (skill?.prompt || "בררי שאלה קצרה רק כשחסר מידע חיוני."),
             },
           ],

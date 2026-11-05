@@ -60,7 +60,7 @@ export function contextFor(messages: ChatTurn[], text: string): ChatTurn[] {
   return [...prior, { role: "user", text }];
 }
 export default function Claudet() {
-  const [dark, setDark] = useState(false),
+  const [dark, setDark] = useState(true),
     [favorites, setFavorites] = useState<string[]>([]),
     [history, setHistory] = useState<string[]>([]),
     [saveHistory, setSaveHistory] = useState(true);
@@ -91,7 +91,7 @@ export default function Claudet() {
       setNotice("האחסון בדפדפן אינו זמין. אפשר להמשיך להשתמש בלי שמירה.");
   };
   useEffect(() => {
-    setDark(readStored("claudet_dark_mode", isBoolean, false));
+    setDark(readStored("claudet_dark_mode", isBoolean, true));
     setFavorites(
       readStored("claudet_favs", isStringArray, []).filter(
         (k) => !!getSkill(k),
@@ -326,9 +326,13 @@ export default function Claudet() {
     <div className={`app ${dark ? "dark" : ""}`}>
       <header className="header">
         <a className="brand" href="#main" aria-label="Claudet — למסך הראשי">
-          <span className="brand-mark" aria-hidden="true">
-            ✳
-          </span>
+          <img
+            className="brand-mark"
+            src="/claudet-mark.webp"
+            alt=""
+            width={52}
+            height={52}
+          />
           <span>
             Claudet<small>מרחב לרעיונות שלך</small>
           </span>
@@ -623,7 +627,13 @@ export default function Claudet() {
             >
               {!messages.length && (
                 <div className="chat-welcome">
-                  <span aria-hidden="true">✳</span>
+                  <img
+                    className="welcome-mark"
+                    src="/claudet-mark.webp"
+                    alt=""
+                    width={60}
+                    height={60}
+                  />
                   <h3>נתחיל מכאן.</h3>
                   <p>{skill ? skill.hint : "מה מעסיק אותך, ומה תרצי ליצור?"}</p>
                   <p>ספרי לי מה המטרה שלך ואעזור בצעד הבא.</p>

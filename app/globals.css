@@ -41,28 +41,40 @@ a {
   color: inherit;
 }
 .app {
-  --ink: #32243f;
-  --muted: #6b577a;
-  --accent: #713b84;
-  --paper: #fffdfb;
-  --line: #e5dce9;
-  --wash: #f2ebf5;
+  color-scheme: dark;
+  --ink: #f8efff;
+  --muted: #c9b9dd;
+  --accent: #efb9ac;
+  --paper: #211632;
+  --line: #584362;
+  --wash: #342246;
+  --action: #eab6a9;
+  --action-ink: #22132d;
   min-height: 100dvh;
   color: var(--ink);
-  background:
-    radial-gradient(ellipse at 9% 12%, #eadcf2 0, transparent 42%),
-    radial-gradient(ellipse at 95% 85%, #f5e6e8 0, transparent 40%), #faf7f4;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    #57426c 0%,
+    #241836 43%,
+    #150f22 78%
+  );
 }
-.app.dark {
-  color-scheme: dark;
-  --ink: #f5eff9;
-  --muted: #c4afcf;
-  --accent: #dab5ee;
-  --paper: #211529;
-  --line: #4d385b;
-  --wash: #302039;
-  background:
-    radial-gradient(ellipse at 5% 0, #39203f, transparent 50%), #160f1d;
+.app:not(.dark) {
+  color-scheme: light;
+  --ink: #291a3a;
+  --muted: #65506e;
+  --accent: #713e65;
+  --paper: #fcf7ff;
+  --line: #d6c4df;
+  --wash: #ede0f2;
+  --action: #5d345f;
+  --action-ink: #fff4f3;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    #e1d6f7 0%,
+    #f0e4f3 55%,
+    #faf0ee 100%
+  );
 }
 .header {
   max-width: 1280px;
@@ -92,16 +104,23 @@ a {
   color: var(--muted);
   margin-top: 3px;
 }
+.brand-mark,
+.welcome-mark {
+  display: block;
+  border-radius: 24%;
+  object-fit: cover;
+  box-shadow: 0 6px 20px #1c11234d;
+}
 .brand-mark {
-  width: 46px;
-  height: 46px;
-  border-radius: 15px;
-  background: #4b245d;
-  color: #f2c5d2;
-  font-size: 37px;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 6px 18px #4a255d20;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+}
+.welcome-mark {
+  margin: 0 auto 14px;
+}
+.app.dark .brand {
+  color: #f0bcaf;
 }
 .header-actions,
 .chat-actions {
@@ -266,7 +285,7 @@ h1 em {
 }
 .send-btn {
   background: #744385;
-  color: #fff;
+  color: var(--action-ink);
   width: 40px;
   height: 40px;
   border-radius: 14px;
@@ -848,4 +867,13 @@ footer span {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+.send-btn {
+  background: var(--action);
+  color: var(--action-ink);
+}
+.send-btn:hover {
+  background: var(--action);
+  filter: brightness(1.08);
 }

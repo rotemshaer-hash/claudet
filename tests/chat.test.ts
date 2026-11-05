@@ -212,6 +212,26 @@ describe("configuration and provider", () => {
   });
 });
 describe("request boundaries", () => {
+  it("recovers from a temporary Gemini generation failure", async () => {
+    const f = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response("Unavailable", { status: 503 }))
+      .mockResolvedValueOnce(
+        Response.json({
+          candidates: [{ content: { parts: [{ text: "התחלה הדרגתית" }] } }],
+        }),
+      );
+    const result = await generateReply(
+      {
+        messages: [{ role: "user", text: "רוצה להתחיל להיות בכושר" }],
+        skill: "sports",
+      },
+      undefined,
+      f,
+    );
+    expect(result.reply).toBe("התחלה הדרגתית");
+    expect(f).toHaveBeenCalledTimes(2);
+  });
   it("limits a client and expires the bucket", () => {
     const key = "test-" + crypto.randomUUID();
     expect(allowRequest(key, 1, 1)).toBe(true);
