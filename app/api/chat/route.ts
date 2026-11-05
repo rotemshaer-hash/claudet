@@ -13,7 +13,13 @@ export async function POST(req: Request) {
   const requestId = randomUUID();
   try {
     const origin = req.headers.get("origin");
-    if (origin && origin !== new URL(req.url).origin)
+    const fetchSite = req.headers.get("sec-fetch-site");
+    // Netlify may pass an internal deploy URL to the handler while the
+    // browser posts to the public preview alias.
+    if (
+      fetchSite === "cross-site" ||
+      (origin && fetchSite !== "same-origin" && origin !== new URL(req.url).origin)
+    )
       throw new ChatError("FORBIDDEN", 403, "הבקשה אינה מורשית.");
     if (!allowRequest(requestKey(req)))
       throw new ChatError(

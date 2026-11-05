@@ -255,6 +255,26 @@ describe("request boundaries", () => {
       error: { code: "INVALID_REQUEST" },
     });
   });
+  it("accepts same-origin browser posts behind a preview alias", async () => {
+    const f = vi.fn(() =>
+      ok({ candidates: [{ content: { parts: [{ text: "51" }] } }] }),
+    );
+    vi.stubGlobal("fetch", f);
+    const r = await POST(
+      new Request("https://internal-deploy.test/api/chat", {
+        method: "POST",
+        headers: {
+          origin: "https://preview.test",
+          "sec-fetch-site": "same-origin",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ messages: [{ role: "user", text: "17 x 3" }] }),
+      }),
+    );
+    expect(r.status).toBe(200);
+    expect(await r.json()).toMatchObject({ reply: "51" });
+    expect(f).toHaveBeenCalledOnce();
+  });
   it("returns provider errors instead of fabricated success", async () => {
     vi.stubGlobal("fetch", () =>
       ok({ error: { message: "secret here" } }, 403),
