@@ -897,3 +897,53 @@ footer span {
     overflow-wrap: anywhere;
   }
 }
+
+.skills-guide {
+  width: calc(100% - 36px);
+  max-width: 920px;
+  margin: 0 auto 18px;
+  padding: clamp(16px, 3vw, 26px);
+  line-height: 1.65;
+}
+.guide-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.guide-heading h2 {
+  margin: 0;
+  font-size: clamp(19px, 3vw, 24px);
+}
+.skills-guide p,
+.skills-guide li {
+  font-size: 14px;
+}
+.skills-guide ol {
+  list-style: decimal;
+  padding-inline-start: 22px;
+  margin: 12px 0 16px;
+}
+.skills-guide li + li {
+  margin-block-start: 6px;
+}
+.skill-example {
+  max-width: 440px;
+  margin: 14px auto 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--wash);
+}
+.guide-toggle {
+  white-space: nowrap;
+}
+@media (max-width: 430px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .header-actions {
+    flex-wrap: wrap;
+  }
+}

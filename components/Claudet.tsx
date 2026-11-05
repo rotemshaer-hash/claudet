@@ -64,6 +64,7 @@ export default function Claudet() {
     [favorites, setFavorites] = useState<string[]>([]),
     [history, setHistory] = useState<string[]>([]),
     [saveHistory, setSaveHistory] = useState(true);
+  const [showGuide, setShowGuide] = useState(false);
   const [query, setQuery] = useState(""),
     [skillSearch, setSkillSearch] = useState(""),
     [activeSkill, setActiveSkill] = useState<string | undefined>(),
@@ -91,6 +92,7 @@ export default function Claudet() {
       setNotice("האחסון בדפדפן אינו זמין. אפשר להמשיך להשתמש בלי שמירה.");
   };
   useEffect(() => {
+    setShowGuide(!readStored("claudet_guide_seen", isBoolean, false));
     setDark(readStored("claudet_dark_mode", isBoolean, false));
     setFavorites(
       readStored("claudet_favs", isStringArray, []).filter(
@@ -318,6 +320,10 @@ export default function Claudet() {
     shown = filterSkills(skillSearch).filter(
       (s) => !showFavorites || favorites.includes(s.key),
     );
+  const closeGuide = () => {
+    setShowGuide(false);
+    writeStored("claudet_guide_seen", true);
+  };
   const submit = (e: FormEvent) => {
     e.preventDefault();
     void send();
@@ -338,6 +344,15 @@ export default function Claudet() {
           </span>
         </a>
         <div className="header-actions">
+          <button
+            type="button"
+            className="quiet-btn guide-toggle"
+            aria-expanded={showGuide}
+            aria-controls="skills-guide"
+            onClick={() => (showGuide ? closeGuide() : setShowGuide(true))}
+          >
+            מדריך קצר
+          </button>
           <button
             className="icon-btn"
             aria-label={dark ? "מעבר למצב בהיר" : "מעבר למצב כהה"}
@@ -443,6 +458,46 @@ export default function Claudet() {
           </div>
         )}
       </div>
+      {showGuide && (
+        <section
+          id="skills-guide"
+          className="panel skills-guide"
+          aria-labelledby="skills-guide-title"
+        >
+          <div className="guide-heading">
+            <h2 id="skills-guide-title">איך מתחילים עם סקילים?</h2>
+            <button
+              type="button"
+              className="icon-btn"
+              aria-label="סגירת המדריך"
+              onClick={closeGuide}
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <p>
+            סקיל הוא מצב שיחה שמכוון את Claudet למשימה מסוימת. אפשר גם לשאול
+            שאלה חופשית.
+          </p>
+          <ol>
+            <li>
+              <strong>בחרי סקיל.</strong> למשל, סטודיו מיתוג כשאת רוצה לנסח מסר
+              לעסק.
+            </li>
+            <li>
+              <strong>כתבי מה תרצי לקבל.</strong> הוסיפי קהל, מגבלות או פורמט אם
+              הם חשובים. אפשר להתחיל מהדוגמה שבתוך הסקיל ולערוך אותה.
+            </li>
+            <li>
+              <strong>המשיכי באותה שיחה.</strong> בקשי לקצר, לשנות כיוון או
+              להוסיף דוגמה. למטרה חדשה אפשר לפתוח שיחה חדשה.
+            </li>
+          </ol>
+          <button type="button" className="quiet-btn" onClick={closeGuide}>
+            הבנתי, בואי נתחיל
+          </button>
+        </section>
+      )}
       <main id="main" className={`workspace ${chatOpen ? "with-chat" : ""}`}>
         <section className="explore" aria-label="תחומי יצירה">
           <div className="hero">
@@ -636,7 +691,26 @@ export default function Claudet() {
                   />
                   <h3>נתחיל מכאן.</h3>
                   <p>{skill ? skill.hint : "מה מעסיק אותך, ומה תרצי ליצור?"}</p>
-                  <p>ספרי לי מה המטרה שלך ואעזור בצעד הבא.</p>
+                  {skill ? (
+                    <div className="skill-example">
+                      <p>
+                        <strong>דוגמה לבקשה</strong>
+                      </p>
+                      <p>{skill.example}</p>
+                      <button
+                        type="button"
+                        className="quiet-btn"
+                        onClick={() => {
+                          setQuery(skill.example);
+                          input.current?.focus();
+                        }}
+                      >
+                        השתמשי בדוגמה
+                      </button>
+                    </div>
+                  ) : (
+                    <p>ספרי לי מה המטרה שלך ואעזור בצעד הבא.</p>
+                  )}
                 </div>
               )}
               {messages.map((m) => (

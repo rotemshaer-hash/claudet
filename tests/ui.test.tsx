@@ -38,6 +38,32 @@ async function ask(text = "שלום") {
   await user.click(screen.getByRole("button", { name: "שליחת שאלה" }));
   return user;
 }
+describe("skill onboarding", () => {
+  it("shows the guide on first visit and remembers dismissal across mounts", async () => {
+    const user = userEvent.setup();
+    const first = render(<Claudet />);
+    const title = "איך מתחילים עם סקילים?";
+    expect(screen.getByRole("heading", { name: title })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "הבנתי, בואי נתחיל" }));
+    first.unmount();
+    render(<Claudet />);
+    expect(
+      screen.queryByRole("heading", { name: title }),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "מדריך קצר" }));
+    expect(screen.getByRole("heading", { name: title })).toBeVisible();
+  });
+  it("prefills a skill example without sending it", async () => {
+    const user = userEvent.setup();
+    render(<Claudet />);
+    await user.click(screen.getByRole("button", { name: "סטודיו מיתוג" }));
+    await user.click(screen.getByRole("button", { name: "השתמשי בדוגמה" }));
+    expect(screen.getByLabelText("הודעה ל־Claudet")).toHaveValue(
+      "הציעי שלושה מסרים למותג מאפייה שכונתית.",
+    );
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
 describe("conversation", () => {
   it("sends a real request, shows reply and passes full follow-up context", async () => {
     const user = await ask();
