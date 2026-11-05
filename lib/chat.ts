@@ -146,8 +146,8 @@ export async function googleRequest(
   const timeout = AbortSignal.timeout(timeoutMs);
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
   try {
-    const send = () =>
-      fetcher("https://generativelanguage.googleapis.com/v1beta/" + path, {
+    const send = (target = path) =>
+      fetcher("https://generativelanguage.googleapis.com/v1beta/" + target, {
         ...init,
         headers: {
           "Content-Type": "application/json",
@@ -162,7 +162,13 @@ export async function googleRequest(
       // Retry transient provider failures once, within the original deadline.
       await res.body?.cancel();
       await delay(400, undefined, { signal: combined });
-      res = await send();
+      // Use an independent model for the second attempt when the default
+      // model is unavailable. Keep the same prompt, key and deadline.
+      const fallback =
+        path === "models/gemini-3.5-flash-lite:generateContent"
+          ? "models/gemini-3.8-flash:generateContent"
+          : path;
+      res = await send(fallback);
     }
     let data;
     try {
@@ -266,7 +272,11 @@ ${message.text}`
       502,
       "שירות ה־AI לא החזיר תשובה. נסי לנסח מחדש.",
     );
-  return { reply, model, truncated: candidate?.finishReason === "MAX_TOKENS" };
+  return {
+    reply,
+    model: data?.modelVersion || model,
+    truncated: candidate?.finishReason === "MAX_TOKENS",
+  };
 }
 export function errorResponse(error: unknown, requestId: string) {
   const e =
