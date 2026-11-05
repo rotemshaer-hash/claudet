@@ -132,7 +132,7 @@ export function providerError(status: number, body?: unknown): ChatError {
   return new ChatError(
     "UPSTREAM_UNAVAILABLE",
     502,
-    "שירות ה־AI אינו זמין כרגע. נסי שוב בעוד מעט.",
+    "Google לא הצליחה להשלים את הבקשה. אפשר לנסות שוב או לערוך את הניסוח.",
   );
 }
 export async function googleRequest(
@@ -216,9 +216,18 @@ export async function generateReply(
             },
           ],
         },
-        contents: input.messages.map((m) => ({
-          role: m.role,
-          parts: [{ text: m.text }],
+        contents: input.messages.map((message, index) => ({
+          role: message.role,
+          parts: [
+            {
+              text:
+                skill && index === input.messages.length - 1
+                  ? `התחום שנבחר: ${skill.label}
+הבקשה של המשתמש:
+${message.text}`
+                  : message.text,
+            },
+          ],
         })),
         generationConfig: { maxOutputTokens: 2048 },
       }),

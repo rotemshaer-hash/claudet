@@ -877,3 +877,23 @@ footer span {
   background: var(--action);
   filter: brightness(1.08);
 }
+
+.edit-request {
+  margin-inline-start: 8px;
+}
+.composer textarea {
+  resize: none;
+}
+@media (max-width: 700px) {
+  .composer textarea {
+    font-size: 16px;
+  }
+  .icon-btn,
+  .send-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .chat-heading h2 {
+    overflow-wrap: anywhere;
+  }
+}

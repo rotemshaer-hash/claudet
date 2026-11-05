@@ -60,7 +60,7 @@ export function contextFor(messages: ChatTurn[], text: string): ChatTurn[] {
   return [...prior, { role: "user", text }];
 }
 export default function Claudet() {
-  const [dark, setDark] = useState(true),
+  const [dark, setDark] = useState(false),
     [favorites, setFavorites] = useState<string[]>([]),
     [history, setHistory] = useState<string[]>([]),
     [saveHistory, setSaveHistory] = useState(true);
@@ -91,7 +91,7 @@ export default function Claudet() {
       setNotice("האחסון בדפדפן אינו זמין. אפשר להמשיך להשתמש בלי שמירה.");
   };
   useEffect(() => {
-    setDark(readStored("claudet_dark_mode", isBoolean, true));
+    setDark(readStored("claudet_dark_mode", isBoolean, false));
     setFavorites(
       readStored("claudet_favs", isStringArray, []).filter(
         (k) => !!getSkill(k),
@@ -668,6 +668,16 @@ export default function Claudet() {
                     }
                   >
                     ניסיון נוסף
+                  </button>
+                  <button
+                    type="button"
+                    className="quiet-btn edit-request"
+                    onClick={() => {
+                      setQuery(failure.text);
+                      input.current?.focus();
+                    }}
+                  >
+                    עריכת הבקשה
                   </button>
                 </div>
               )}
