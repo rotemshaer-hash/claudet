@@ -1,23 +1,14 @@
-import React from 'react';
-
-export const metadata = {
-  title: 'Claudet - AI & Code Studio',
-  description: 'Interactive Generative Micro-UI Engine for Women in Tech & Business',
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import "./globals.css";
+export const metadata: Metadata = {
+  title: "Claudet — מרחב לרעיונות שלך",
+  description: "מרחב יצירתי בעברית לשיחה, כתיבה, תכנון וחשיבה עם AI.",
 };
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="he" dir="rtl">
-      <head>
-        <script src="https://cdn.tailwindcss.com"></script>
-      </head>
-      <body className="bg-[#070611] text-slate-100 antialiased">
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
