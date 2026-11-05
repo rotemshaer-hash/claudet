@@ -319,9 +319,9 @@ describe("request boundaries", () => {
     expect(f.mock.calls[0][0]).toMatch(/models\/gemini-3.5-flash-lite$/);
   });
 });
-it("each of 18 skills has a distinct instruction and local search works", () => {
-  expect(skills).toHaveLength(18);
-  expect(new Set(skills.map((s) => s.prompt)).size).toBe(18);
+it("each of 21 skills has a distinct instruction and local search works", () => {
+  expect(skills).toHaveLength(21);
+  expect(new Set(skills.map((s) => s.prompt)).size).toBe(21);
   expect(filterSkills("מיתוג").some((s) => s.key === "branding")).toBe(true);
   expect(filterSkills("xyz-no-match")).toEqual([]);
 });

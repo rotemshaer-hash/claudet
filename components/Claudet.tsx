@@ -16,7 +16,13 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { filterSkills, getSkill, skills } from "../lib/skills";
+import {
+  filterSkills,
+  getSkill,
+  skillGroups,
+  skills,
+  type SkillGroup,
+} from "../lib/skills";
 import { ChatTurn, MAX_INPUT, MAX_CONTEXT } from "../lib/contracts";
 import {
   isBoolean,
@@ -64,6 +70,7 @@ export default function Claudet() {
     [favorites, setFavorites] = useState<string[]>([]),
     [history, setHistory] = useState<string[]>([]),
     [saveHistory, setSaveHistory] = useState(true);
+  const [skillGroup, setSkillGroup] = useState<SkillGroup>();
   const [showGuide, setShowGuide] = useState(false);
   const [query, setQuery] = useState(""),
     [skillSearch, setSkillSearch] = useState(""),
@@ -318,7 +325,9 @@ export default function Claudet() {
   }
   const skill = getSkill(activeSkill),
     shown = filterSkills(skillSearch).filter(
-      (s) => !showFavorites || favorites.includes(s.key),
+      (s) =>
+        (!skillGroup || s.group === skillGroup) &&
+        (!showFavorites || favorites.includes(s.key)),
     );
   const closeGuide = () => {
     setShowGuide(false);
@@ -585,6 +594,31 @@ export default function Claudet() {
               type="search"
             />
           </div>
+          <div
+            className="skill-groups"
+            role="group"
+            aria-label="סינון לפי קטגוריה"
+          >
+            <button
+              type="button"
+              className="quiet-btn"
+              aria-pressed={!skillGroup}
+              onClick={() => setSkillGroup(undefined)}
+            >
+              הכול
+            </button>
+            {skillGroups.map((group) => (
+              <button
+                key={group}
+                type="button"
+                className="quiet-btn"
+                aria-pressed={skillGroup === group}
+                onClick={() => setSkillGroup(group)}
+              >
+                {group}
+              </button>
+            ))}
+          </div>
           <div className="skills-grid">
             {shown.map((s) => (
               <div
@@ -697,6 +731,27 @@ export default function Claudet() {
                         <strong>דוגמה לבקשה</strong>
                       </p>
                       <p>{skill.example}</p>
+                      {"starters" in skill && (
+                        <div
+                          className="skill-groups"
+                          role="group"
+                          aria-label="בחירת משימה"
+                        >
+                          {skill.starters.map((starter) => (
+                            <button
+                              key={starter.label}
+                              type="button"
+                              className="quiet-btn"
+                              onClick={() => {
+                                setQuery(starter.text);
+                                input.current?.focus();
+                              }}
+                            >
+                              {starter.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                       <button
                         type="button"
                         className="quiet-btn"

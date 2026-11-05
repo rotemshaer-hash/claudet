@@ -947,3 +947,22 @@ footer span {
     flex-wrap: wrap;
   }
 }
+
+.skill-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block: 10px;
+}
+.skill-groups .quiet-btn {
+  min-height: 36px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.skill-groups .quiet-btn[aria-pressed="true"] {
+  color: var(--action-ink);
+  background: var(--action);
+}
+.skill-example .skill-groups {
+  justify-content: center;
+}
