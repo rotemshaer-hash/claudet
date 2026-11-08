@@ -1,37 +1,53 @@
-import { NextResponse } from 'next/server';
-
+import { randomUUID } from "node:crypto";
+import {
+  ChatError,
+  errorResponse,
+  generateReply,
+  MAX_BODY,
+  validateChat,
+} from "../../../lib/chat";
+import { allowRequest, readBody, requestKey } from "../../../lib/rate-limit";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
+  const requestId = randomUUID();
   try {
-    const body = await req.json();
-    const prompt = body.prompt || body.message || '';
-    const apiKey = process.env.GEMINI_API_KEY || '';
-    
-    if (!apiKey) {
-      return NextResponse.json({ reply: 'שגיאה: מפתח ה-API אינו מוגדר ב-Netlify.' });
+    const origin = req.headers.get("origin");
+    const fetchSite = req.headers.get("sec-fetch-site");
+    // Netlify may pass an internal deploy URL to the handler while the
+    // browser posts to the public preview alias.
+    if (
+      fetchSite === "cross-site" ||
+      (origin && fetchSite !== "same-origin" && origin !== new URL(req.url).origin)
+    )
+      throw new ChatError("FORBIDDEN", 403, "הבקשה אינה מורשית.");
+    if (!allowRequest(requestKey(req)))
+      throw new ChatError(
+        "RATE_LIMITED",
+        429,
+        "נשלחו בקשות רבות מדי. נסי שוב בעוד דקה.",
+      );
+    if (
+      !req.headers
+        .get("content-type")
+        ?.toLowerCase()
+        .startsWith("application/json")
+    )
+      throw new ChatError("INVALID_REQUEST", 415, "יש לשלוח בקשה בתבנית JSON.");
+    let body: unknown;
+    try {
+      body = JSON.parse(await readBody(req, MAX_BODY));
+    } catch (e) {
+      if (e instanceof RangeError)
+        throw new ChatError("TOO_LARGE", 413, "הבקשה ארוכה מדי.");
+      throw new ChatError("INVALID_REQUEST", 400, "הבקשה אינה JSON תקין.");
     }
-
-    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }]
-      })
-    });
-
-    const data = await apiRes.json();
-    const textReply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (textReply) {
-      return NextResponse.json({ reply: textReply });
-    } else {
-      return NextResponse.json({ 
-        reply: `התקבלה הבקשה שלך: "${prompt}". המערכת מחוברת לפלטפורמת Claudet בהצלחה.` 
-      });
-    }
-
-  } catch (error) {
-    return NextResponse.json({ 
-      reply: 'התקבלה הבקשה שלך. ממשיכים לעבוד כרגיל.' 
-    });
+    const result = await generateReply(validateChat(body), req.signal);
+    return Response.json(
+      { ok: true, ...result, requestId },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (e) {
+    return errorResponse(e, requestId);
   }
 }
