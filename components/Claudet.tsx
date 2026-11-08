@@ -9,6 +9,7 @@ import {
   Mic,
   Moon,
   Search,
+  Shirt,
   Settings2,
   ShieldCheck,
   Square,
@@ -32,6 +33,7 @@ import {
   writeStored,
 } from "../lib/storage";
 import { Markdown } from "./Markdown";
+import { StyleWorkspace } from "./StyleWorkspace";
 
 type Message = ChatTurn & { id: string };
 type Failure = { text: string; message: string; requestId?: string };
@@ -70,6 +72,8 @@ export default function Claudet() {
     [favorites, setFavorites] = useState<string[]>([]),
     [history, setHistory] = useState<string[]>([]),
     [saveHistory, setSaveHistory] = useState(true);
+  const [styleOpen, setStyleOpen] = useState(false);
+  const [styleInitial, setStyleInitial] = useState("");
   const [skillGroup, setSkillGroup] = useState<SkillGroup>();
   const [showGuide, setShowGuide] = useState(false);
   const [query, setQuery] = useState(""),
@@ -147,7 +151,20 @@ export default function Claudet() {
     setQuery("");
     input.current?.focus();
   };
+  const openStyle = (initial = "") => {
+    cancel();
+    recognition.current?.abort();
+    setListening(false);
+    setChatOpen(false);
+    setStyleInitial(initial);
+    setStyleOpen(true);
+    window.scrollTo?.(0, 0);
+  };
   const chooseSkill = (key: string) => {
+    if (key === "style") {
+      openStyle();
+      return;
+    }
     cancel();
     recognition.current?.abort();
     setListening(false);
@@ -485,8 +502,8 @@ export default function Claudet() {
             </button>
           </div>
           <p>
-            סקיל הוא מצב שיחה שמכוון את Claudet למשימה מסוימת. אפשר גם לשאול
-            שאלה חופשית.
+            בחרי כלי לפי מה שתרצי לעשות. סטייל פותח סביבת עבודה להרכבת הופעות,
+            וכלי השיחה עוזרים לעבוד על משימה מסוימת.
           </p>
           <ol>
             <li>
@@ -508,374 +525,411 @@ export default function Claudet() {
         </section>
       )}
       <main id="main" className={`workspace ${chatOpen ? "with-chat" : ""}`}>
-        <section className="explore" aria-label="תחומי יצירה">
-          <div className="hero">
-            <span className="eyebrow">רעיון קטן. התחלה חדשה.</span>
-            <h1>
-              מה תרצי
-              <br />
-              <em>ליצור היום?</em>
-            </h1>
-            <p>
-              לכתוב, לתכנן ולחשוב יחד.
-              <br />
-              בחרי תחום או התחילי בשאלה משלך.
-            </p>
-          </div>
-          {!chatOpen && (
-            <form className="composer hero-composer" onSubmit={submit}>
-              <label className="sr-only" htmlFor="question">
-                השאלה שלך ל־Claudet
-              </label>
-              <textarea
-                id="question"
-                ref={input}
-                value={query}
-                maxLength={MAX_INPUT}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="יש לי רעיון…"
-                rows={2}
-                onKeyDown={(e) => {
-                  if (
-                    e.key === "Enter" &&
-                    !e.shiftKey &&
-                    !e.nativeEvent.isComposing
-                  ) {
-                    e.preventDefault();
-                    void send();
-                  }
-                }}
-              />
-              <div className="composer-bottom">
-                <button
-                  type="button"
-                  className={`icon-btn ${listening ? "listening" : ""}`}
-                  aria-label={listening ? "עצירת זיהוי קולי" : "הכתבת שאלה"}
-                  aria-pressed={listening}
-                  onClick={voice}
-                >
-                  <Mic size={19} />
-                </button>
-                <span className="input-hint">
-                  Enter לשליחה · Shift+Enter לשורה חדשה
+        {styleOpen ? (
+          <StyleWorkspace
+            initial={styleInitial}
+            onBack={() => setStyleOpen(false)}
+          />
+        ) : (
+          <>
+            <section className="explore" aria-label="תחומי יצירה">
+              <div className="hero">
+                <span className="hero-decoration" aria-hidden="true">
+                  ✳
                 </span>
-                <button
-                  type="submit"
-                  className="send-btn"
-                  aria-label="שליחת שאלה"
-                  disabled={!query.trim() || loading}
-                >
-                  <ArrowUp size={21} />
-                </button>
+                <span className="eyebrow">מרחב עבודה משלך</span>
+                <h1>
+                  מה תרצי
+                  <br />
+                  <em>לקדם היום?</em>
+                </h1>
+                <p>
+                  לחשוב, ליצור ולעבוד בקצב שלך.
+                  <br />
+                  בחרי תחום או התחילי בשאלה משלך.
+                </p>
               </div>
-            </form>
-          )}
-          <div className="skills-heading">
-            <h2>הכלים לשיחה הבאה שלך</h2>
-            <button
-              className="filter-btn"
-              aria-pressed={showFavorites}
-              onClick={() => setShowFavorites(!showFavorites)}
-            >
-              <Heart size={15} />
-              {showFavorites ? "כל התחומים" : "המועדפים שלי"}
-            </button>
-          </div>
-          <div className="skill-search">
-            <Search size={17} aria-hidden="true" />
-            <label className="sr-only" htmlFor="skill-search">
-              חיפוש תחום
-            </label>
-            <input
-              id="skill-search"
-              value={skillSearch}
-              onChange={(e) => setSkillSearch(e.target.value)}
-              placeholder="חפשי תחום, למשל מיתוג או קוד"
-              type="search"
-            />
-          </div>
-          <div
-            className="skill-groups"
-            role="group"
-            aria-label="סינון לפי קטגוריה"
-          >
-            <button
-              type="button"
-              className="quiet-btn"
-              aria-pressed={!skillGroup}
-              onClick={() => setSkillGroup(undefined)}
-            >
-              הכול
-            </button>
-            {skillGroups.map((group) => (
-              <button
-                key={group}
-                type="button"
-                className="quiet-btn"
-                aria-pressed={skillGroup === group}
-                onClick={() => setSkillGroup(group)}
-              >
-                {group}
-              </button>
-            ))}
-          </div>
-          <div className="skills-grid">
-            {shown.map((s) => (
-              <div
-                key={s.key}
-                className={`skill-card ${activeSkill === s.key ? "selected" : ""}`}
-              >
-                <button
-                  className="skill-main"
-                  aria-label={s.label}
-                  onClick={() => chooseSkill(s.key)}
-                >
-                  <span className="skill-icon" aria-hidden="true">
-                    {s.icon}
-                  </span>
-                  <span>
-                    <strong>{s.label}</strong>
-                    <small>{s.hint}</small>
-                  </span>
-                </button>
-                <button
-                  className={`favorite ${favorites.includes(s.key) ? "is-favorite" : ""}`}
-                  aria-label={`${favorites.includes(s.key) ? "הסרת" : "הוספת"} ${s.label} ${favorites.includes(s.key) ? "מהמועדפים" : "למועדפים"}`}
-                  aria-pressed={favorites.includes(s.key)}
-                  onClick={() => favorite(s.key)}
-                >
-                  <Heart size={16} />
-                </button>
-              </div>
-            ))}
-          </div>
-          {!shown.length && (
-            <p className="empty">
-              {showFavorites
-                ? "לא נמצאו מועדפים מתאימים. אפשר לסמן לב ליד תחום."
-                : "לא נמצא תחום מתאים. נסי מילה אחרת או שאלי שאלה חופשית."}
-            </p>
-          )}
-          {history.length > 0 && (
-            <section className="history" aria-label="שאלות אחרונות">
-              <h2>מחשבות אחרונות</h2>
-              <div>
-                {history.map((text) => (
-                  <button
-                    key={text}
-                    title={text}
-                    disabled={loading}
-                    onClick={() => {
-                      setQuery(text);
-                      setNotice("השאלה הועתקה לשדה. אפשר לערוך ולשלוח.");
-                      input.current?.focus();
+              {!chatOpen && (
+                <form className="composer hero-composer" onSubmit={submit}>
+                  <label className="sr-only" htmlFor="question">
+                    השאלה שלך ל־Claudet
+                  </label>
+                  <textarea
+                    id="question"
+                    ref={input}
+                    value={query}
+                    maxLength={MAX_INPUT}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="יש לי רעיון…"
+                    rows={2}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        !e.shiftKey &&
+                        !e.nativeEvent.isComposing
+                      ) {
+                        e.preventDefault();
+                        void send();
+                      }
                     }}
-                  >
-                    {text}
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
-        </section>
-        {chatOpen && (
-          <section className="chat panel" aria-labelledby="chat-title">
-            <div className="chat-heading">
-              <div>
-                <span className="eyebrow">המקום לחשוב בקול</span>
-                <h2 id="chat-title">
-                  {skill
-                    ? skill.icon + " " + skill.label
-                    : "השיחה שלך עם Claudet"}
-                </h2>
-              </div>
-              <div className="chat-actions">
-                <button
-                  className="icon-btn"
-                  aria-label="העתקת שיחה"
-                  disabled={!messages.length}
-                  onClick={() => void copy()}
-                >
-                  {copied ? <Check size={18} /> : <Copy size={18} />}
-                </button>
-                <button
-                  className="icon-btn"
-                  aria-label="סגירת שיחה ופתיחת שיחה חדשה"
-                  onClick={newChat}
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-            <div
-              className="messages"
-              role="log"
-              aria-label="הודעות השיחה"
-              aria-live="polite"
-              aria-busy={loading}
-            >
-              {!messages.length && (
-                <div className="chat-welcome">
-                  <img
-                    className="welcome-mark"
-                    src="/claudet-mark.webp"
-                    alt=""
-                    width={60}
-                    height={60}
                   />
-                  <h3>נתחיל מכאן.</h3>
-                  <p>{skill ? skill.hint : "מה מעסיק אותך, ומה תרצי ליצור?"}</p>
-                  {skill ? (
-                    <div className="skill-example">
-                      <p>
-                        <strong>דוגמה לבקשה</strong>
-                      </p>
-                      <p>{skill.example}</p>
-                      {"starters" in skill && (
-                        <div
-                          className="skill-groups"
-                          role="group"
-                          aria-label="בחירת משימה"
-                        >
-                          {skill.starters.map((starter) => (
-                            <button
-                              key={starter.label}
-                              type="button"
-                              className="quiet-btn"
-                              onClick={() => {
-                                setQuery(starter.text);
-                                input.current?.focus();
-                              }}
-                            >
-                              {starter.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        className="quiet-btn"
-                        onClick={() => {
-                          setQuery(skill.example);
-                          input.current?.focus();
-                        }}
-                      >
-                        השתמשי בדוגמה
-                      </button>
-                    </div>
-                  ) : (
-                    <p>ספרי לי מה המטרה שלך ואעזור בצעד הבא.</p>
-                  )}
-                </div>
+                  <div className="composer-bottom">
+                    <button
+                      type="button"
+                      className={`icon-btn ${listening ? "listening" : ""}`}
+                      aria-label={listening ? "עצירת זיהוי קולי" : "הכתבת שאלה"}
+                      aria-pressed={listening}
+                      onClick={voice}
+                    >
+                      <Mic size={19} />
+                    </button>
+                    <span className="input-hint">
+                      Enter לשליחה · Shift+Enter לשורה חדשה
+                    </span>
+                    <button
+                      type="submit"
+                      className="send-btn"
+                      aria-label="שליחת שאלה"
+                      disabled={!query.trim() || loading}
+                    >
+                      <ArrowUp size={21} />
+                    </button>
+                  </div>
+                </form>
               )}
-              {messages.map((m) => (
-                <article key={m.id} className={`message ${m.role}`}>
-                  <strong className="message-label">
-                    {m.role === "user" ? "את" : "Claudet"}
-                  </strong>
-                  <Markdown text={m.text} />
-                </article>
-              ))}
-              {loading && (
-                <div className="thinking">
-                  <LoaderCircle size={17} className="spin" />
-                  חושבת איתך…
-                </div>
-              )}
-              {failure && (
-                <div className="error" role="alert">
-                  <p>{failure.message}</p>
-                  {failure.requestId && (
-                    <small>
-                      מזהה פנייה: <bdi>{failure.requestId}</bdi>
-                    </small>
-                  )}
+              {!chatOpen && (
+                <div className="style-spotlight">
+                  <span className="style-emblem">
+                    <Shirt size={21} />
+                  </span>
+                  <div>
+                    <strong>מה ללבוש?</strong>
+                    <small>הרכיבי הופעה מהארון שלך ושמרי לפעם הבאה.</small>
+                  </div>
                   <button
                     className="quiet-btn"
                     onClick={() =>
-                      void send(failure.text, messages.slice(0, -1))
+                      openStyle(
+                        /ללבוש|הופעה|בגד|אופנה|סטייל|עקבים/.test(query)
+                          ? query
+                          : "",
+                      )
                     }
                   >
-                    ניסיון נוסף
-                  </button>
-                  <button
-                    type="button"
-                    className="quiet-btn edit-request"
-                    onClick={() => {
-                      setQuery(failure.text);
-                      input.current?.focus();
-                    }}
-                  >
-                    עריכת הבקשה
+                    פתחי סטייל
                   </button>
                 </div>
               )}
-              <div ref={bottom} />
-            </div>
-            <form className="composer chat-composer" onSubmit={submit}>
-              <label className="sr-only" htmlFor="follow-up">
-                הודעה ל־Claudet
-              </label>
-              <textarea
-                id="follow-up"
-                ref={input}
-                value={query}
-                maxLength={MAX_INPUT}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={
-                  messages.length ? "מה תרצי להוסיף?" : "במה תרצי שנתחיל?"
-                }
-                rows={2}
-                disabled={loading}
-                onKeyDown={(e) => {
-                  if (
-                    e.key === "Enter" &&
-                    !e.shiftKey &&
-                    !e.nativeEvent.isComposing
-                  ) {
-                    e.preventDefault();
-                    void send();
-                  }
-                }}
-              />
-              <div className="composer-bottom">
+              <div className="skills-heading">
+                <h2>כל 21 הכלים שלך</h2>
+                <button
+                  className="filter-btn"
+                  aria-pressed={showFavorites}
+                  onClick={() => setShowFavorites(!showFavorites)}
+                >
+                  <Heart size={15} />
+                  {showFavorites ? "כל התחומים" : "המועדפים שלי"}
+                </button>
+              </div>
+              <div className="skill-search">
+                <Search size={17} aria-hidden="true" />
+                <label className="sr-only" htmlFor="skill-search">
+                  חיפוש תחום
+                </label>
+                <input
+                  id="skill-search"
+                  value={skillSearch}
+                  onChange={(e) => setSkillSearch(e.target.value)}
+                  placeholder="חפשי תחום, למשל מיתוג או קוד"
+                  type="search"
+                />
+              </div>
+              <div
+                className="skill-groups"
+                role="group"
+                aria-label="סינון לפי קטגוריה"
+              >
                 <button
                   type="button"
-                  className={`icon-btn ${listening ? "listening" : ""}`}
-                  aria-label={listening ? "עצירת זיהוי קולי" : "הכתבת שאלה"}
-                  disabled={loading}
-                  onClick={voice}
+                  className="quiet-btn"
+                  aria-pressed={!skillGroup}
+                  onClick={() => setSkillGroup(undefined)}
                 >
-                  <Mic size={18} />
+                  הכול
                 </button>
-                <small className="input-hint">
-                  {query.length}/{MAX_INPUT}
-                </small>
-                {loading ? (
+                {skillGroups.map((group) => (
                   <button
+                    key={group}
                     type="button"
-                    className="send-btn"
-                    aria-label="עצירת תשובה"
-                    onClick={stop}
+                    className="quiet-btn"
+                    aria-pressed={skillGroup === group}
+                    onClick={() => setSkillGroup(group)}
                   >
-                    <Square size={17} />
+                    {group}
                   </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="send-btn"
-                    aria-label="שליחת הודעה"
-                    disabled={!query.trim()}
-                  >
-                    <ArrowUp size={20} />
-                  </button>
-                )}
+                ))}
               </div>
-            </form>
-            <p className="chat-disclaimer">
-              AI עלול לטעות. מידע עדכני יש לאמת; חיפוש חי ברשת אינו מופעל.
-            </p>
-          </section>
+              <div className="skills-grid">
+                {shown.map((s) => (
+                  <div
+                    key={s.key}
+                    className={`skill-card ${activeSkill === s.key ? "selected" : ""}`}
+                  >
+                    <button
+                      className="skill-main"
+                      aria-label={s.label}
+                      onClick={() => chooseSkill(s.key)}
+                    >
+                      <span className="skill-icon" aria-hidden="true">
+                        {s.icon}
+                      </span>
+                      <span>
+                        <strong>{s.label}</strong>
+                        <small>{s.hint}</small>
+                      </span>
+                    </button>
+                    <button
+                      className={`favorite ${favorites.includes(s.key) ? "is-favorite" : ""}`}
+                      aria-label={`${favorites.includes(s.key) ? "הסרת" : "הוספת"} ${s.label} ${favorites.includes(s.key) ? "מהמועדפים" : "למועדפים"}`}
+                      aria-pressed={favorites.includes(s.key)}
+                      onClick={() => favorite(s.key)}
+                    >
+                      <Heart size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {!shown.length && (
+                <p className="empty">
+                  {showFavorites
+                    ? "לא נמצאו מועדפים מתאימים. אפשר לסמן לב ליד תחום."
+                    : "לא נמצא תחום מתאים. נסי מילה אחרת או שאלי שאלה חופשית."}
+                </p>
+              )}
+              {history.length > 0 && (
+                <section className="history" aria-label="שאלות אחרונות">
+                  <h2>מחשבות אחרונות</h2>
+                  <div>
+                    {history.map((text) => (
+                      <button
+                        key={text}
+                        title={text}
+                        disabled={loading}
+                        onClick={() => {
+                          setQuery(text);
+                          setNotice("השאלה הועתקה לשדה. אפשר לערוך ולשלוח.");
+                          input.current?.focus();
+                        }}
+                      >
+                        {text}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </section>
+            {chatOpen && (
+              <section className="chat panel" aria-labelledby="chat-title">
+                <div className="chat-heading">
+                  <div>
+                    <span className="eyebrow">המקום לחשוב בקול</span>
+                    <h2 id="chat-title">
+                      {skill
+                        ? skill.icon + " " + skill.label
+                        : "השיחה שלך עם Claudet"}
+                    </h2>
+                  </div>
+                  <div className="chat-actions">
+                    <button
+                      className="icon-btn"
+                      aria-label="העתקת שיחה"
+                      disabled={!messages.length}
+                      onClick={() => void copy()}
+                    >
+                      {copied ? <Check size={18} /> : <Copy size={18} />}
+                    </button>
+                    <button
+                      className="icon-btn"
+                      aria-label="סגירת שיחה ופתיחת שיחה חדשה"
+                      onClick={newChat}
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                </div>
+                <div
+                  className="messages"
+                  role="log"
+                  aria-label="הודעות השיחה"
+                  aria-live="polite"
+                  aria-busy={loading}
+                >
+                  {!messages.length && (
+                    <div className="chat-welcome">
+                      <img
+                        className="welcome-mark"
+                        src="/claudet-mark.webp"
+                        alt=""
+                        width={60}
+                        height={60}
+                      />
+                      <h3>נתחיל מכאן.</h3>
+                      <p>
+                        {skill ? skill.hint : "מה מעסיק אותך, ומה תרצי ליצור?"}
+                      </p>
+                      {skill ? (
+                        <div className="skill-example">
+                          <p>
+                            <strong>דוגמה לבקשה</strong>
+                          </p>
+                          <p>{skill.example}</p>
+                          {"starters" in skill && (
+                            <div
+                              className="skill-groups"
+                              role="group"
+                              aria-label="בחירת משימה"
+                            >
+                              {skill.starters.map((starter) => (
+                                <button
+                                  key={starter.label}
+                                  type="button"
+                                  className="quiet-btn"
+                                  onClick={() => {
+                                    setQuery(starter.text);
+                                    input.current?.focus();
+                                  }}
+                                >
+                                  {starter.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            className="quiet-btn"
+                            onClick={() => {
+                              setQuery(skill.example);
+                              input.current?.focus();
+                            }}
+                          >
+                            השתמשי בדוגמה
+                          </button>
+                        </div>
+                      ) : (
+                        <p>ספרי לי מה המטרה שלך ואעזור בצעד הבא.</p>
+                      )}
+                    </div>
+                  )}
+                  {messages.map((m) => (
+                    <article key={m.id} className={`message ${m.role}`}>
+                      <strong className="message-label">
+                        {m.role === "user" ? "את" : "Claudet"}
+                      </strong>
+                      <Markdown text={m.text} />
+                    </article>
+                  ))}
+                  {loading && (
+                    <div className="thinking">
+                      <LoaderCircle size={17} className="spin" />
+                      חושבת איתך…
+                    </div>
+                  )}
+                  {failure && (
+                    <div className="error" role="alert">
+                      <p>{failure.message}</p>
+                      {failure.requestId && (
+                        <small>
+                          מזהה פנייה: <bdi>{failure.requestId}</bdi>
+                        </small>
+                      )}
+                      <button
+                        className="quiet-btn"
+                        onClick={() =>
+                          void send(failure.text, messages.slice(0, -1))
+                        }
+                      >
+                        ניסיון נוסף
+                      </button>
+                      <button
+                        type="button"
+                        className="quiet-btn edit-request"
+                        onClick={() => {
+                          setQuery(failure.text);
+                          input.current?.focus();
+                        }}
+                      >
+                        עריכת הבקשה
+                      </button>
+                    </div>
+                  )}
+                  <div ref={bottom} />
+                </div>
+                <form className="composer chat-composer" onSubmit={submit}>
+                  <label className="sr-only" htmlFor="follow-up">
+                    הודעה ל־Claudet
+                  </label>
+                  <textarea
+                    id="follow-up"
+                    ref={input}
+                    value={query}
+                    maxLength={MAX_INPUT}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={
+                      messages.length ? "מה תרצי להוסיף?" : "במה תרצי שנתחיל?"
+                    }
+                    rows={2}
+                    disabled={loading}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        !e.shiftKey &&
+                        !e.nativeEvent.isComposing
+                      ) {
+                        e.preventDefault();
+                        void send();
+                      }
+                    }}
+                  />
+                  <div className="composer-bottom">
+                    <button
+                      type="button"
+                      className={`icon-btn ${listening ? "listening" : ""}`}
+                      aria-label={listening ? "עצירת זיהוי קולי" : "הכתבת שאלה"}
+                      disabled={loading}
+                      onClick={voice}
+                    >
+                      <Mic size={18} />
+                    </button>
+                    <small className="input-hint">
+                      {query.length}/{MAX_INPUT}
+                    </small>
+                    {loading ? (
+                      <button
+                        type="button"
+                        className="send-btn"
+                        aria-label="עצירת תשובה"
+                        onClick={stop}
+                      >
+                        <Square size={17} />
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        className="send-btn"
+                        aria-label="שליחת הודעה"
+                        disabled={!query.trim()}
+                      >
+                        <ArrowUp size={20} />
+                      </button>
+                    )}
+                  </div>
+                </form>
+                <p className="chat-disclaimer">
+                  AI עלול לטעות. מידע עדכני יש לאמת; חיפוש חי ברשת אינו מופעל.
+                </p>
+              </section>
+            )}
+          </>
         )}
       </main>
       <footer>

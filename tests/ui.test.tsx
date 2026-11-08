@@ -12,6 +12,7 @@ import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom/vitest";
 import Claudet, { contextFor } from "../components/Claudet";
 import { Markdown } from "../components/Markdown";
+import { StyleWorkspace } from "../components/StyleWorkspace";
 import { isStringArray, readStored, writeStored } from "../lib/storage";
 const success = (reply = "תשובה אמיתית") => Response.json({ ok: true, reply });
 beforeEach(() => {
@@ -250,5 +251,25 @@ it("renders markdown as text without executing HTML", () => {
   expect(screen.getByText("bad")).not.toHaveAttribute(
     "href",
     "javascript:alert(1)",
+  );
+});
+
+it("keeps saved outfits available after starting over and remounting", async () => {
+  const user = userEvent.setup();
+  const first = render(<StyleWorkspace initial="" onBack={vi.fn()} />);
+  await user.click(screen.getByRole("button", { name: "נסי דוגמה" }));
+  await user.selectOptions(
+    screen.getByLabelText("נעליים להופעה 1"),
+    "נעלי בובה שחורות",
+  );
+  await user.click(screen.getByRole("button", { name: "שמרי הופעות" }));
+  await user.click(screen.getByRole("button", { name: "התחילי מחדש" }));
+  expect(screen.queryByText("הופעה 1")).not.toBeInTheDocument();
+  first.unmount();
+
+  render(<StyleWorkspace initial="" onBack={vi.fn()} />);
+  await user.click(screen.getByRole("button", { name: "אירוע ערב בלי עקבים" }));
+  expect(screen.getByLabelText("נעליים להופעה 1")).toHaveValue(
+    "נעלי בובה שחורות",
   );
 });
